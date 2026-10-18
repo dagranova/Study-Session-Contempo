@@ -1,0 +1,3472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interactive Web Reviewer — The Contemporary World</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+<style>
+/* =========================================================
+   DESIGN TOKENS
+   ========================================================= */
+:root {
+  --bg: #f8f9fb;
+  --bg-elev: #ffffff;
+  --text: #1a1d21;
+  --text-muted: #5a6372;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-soft: rgba(37, 99, 235, 0.10);
+  --success: #059669;
+  --danger: #dc2626;
+  --warning: #d97706;
+  --border: #e2e6ec;
+  --border-strong: #c9d1dc;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.10);
+  --radius: 10px;
+  --radius-sm: 6px;
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --nav-h: 60px;
+  --sidebar-w: 288px;
+  --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+body[data-theme="dark"] {
+  --bg: #0f1216;
+  --bg-elev: #171b21;
+  --text: #e8ecf1;
+  --text-muted: #9aa3b1;
+  --accent: #3b82f6;
+  --accent-hover: #60a5fa;
+  --accent-soft: rgba(59, 130, 246, 0.15);
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --border: #262b33;
+  --border-strong: #3a4150;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.6);
+}
+
+/* =========================================================
+   RESET & BASE
+   ========================================================= */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+  transition: background var(--transition), color var(--transition);
+}
+button { font-family: inherit; cursor: pointer; }
+input, textarea { font-family: inherit; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* =========================================================
+   ICON SYSTEM — SVG data URIs via CSS mask
+   ========================================================= */
+.i {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background-color: currentColor;
+  mask: center / contain no-repeat;
+  -webkit-mask: center / contain no-repeat;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+.icon-menu    { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z'/></svg>"); }
+.icon-search  { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z'/></svg>"); }
+.icon-sun     { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0-5v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M2 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0-5v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M2 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42'/></svg>"); }
+.icon-moon    { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36A6 6 0 0 1 12 3z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36A6 6 0 0 1 12 3z'/></svg>"); }
+.icon-close   { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/></svg>"); }
+.icon-play    { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M8 5v14l11-7z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M8 5v14l11-7z'/></svg>"); }
+.icon-pause   { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 5h4v14H6zm8 0h4v14h-4z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 5h4v14H6zm8 0h4v14h-4z'/></svg>"); }
+.icon-stop    { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 6h12v12H6z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 6h12v12H6z'/></svg>"); }
+.icon-chevron { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z'/></svg>"); }
+.icon-check   { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/></svg>"); }
+.icon-warning { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z'/></svg>"); }
+.icon-info    { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z'/></svg>"); }
+.icon-note    { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'/></svg>"); }
+.icon-quiz    { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z'/></svg>"); }
+.icon-print   { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm-1-9H6v4h12z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm-1-9H6v4h12z'/></svg>"); }
+.icon-reset   { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M17.65 6.35A8 8 0 1 0 19.73 14h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M17.65 6.35A8 8 0 1 0 19.73 14h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z'/></svg>"); }
+.icon-shuffle { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M10.59 9.17 5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M10.59 9.17 5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z'/></svg>"); }
+.icon-arrow-l { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z'/></svg>"); }
+.icon-arrow-r { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z'/></svg>"); }
+.icon-book    { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zM6 4h5v8l-2.5-1.5L6 12V4z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zM6 4h5v8l-2.5-1.5L6 12V4z'/></svg>"); }
+.icon-hourglass { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 2v6h.01L6 8.01 10 12l-4 4 .01.01H6V22h12v-5.99h-.01L18 16l-4-4 4-3.99-.01-.01H18V2H6z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 2v6h.01L6 8.01 10 12l-4 4 .01.01H6V22h12v-5.99h-.01L18 16l-4-4 4-3.99-.01-.01H18V2H6z'/></svg>"); }
+.icon-target  { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm0-14a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm0 10a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-6a2 2 0 1 0 0 4 2 2 0 0 0 0-4z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm0-14a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm0 10a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-6a2 2 0 1 0 0 4 2 2 0 0 0 0-4z'/></svg>"); }
+.icon-list    { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z'/></svg>"); }
+.icon-cards   { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M20 2H8a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zM4 6H2v14a2 2 0 0 0 2 2h14v-2H4V6z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M20 2H8a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zM4 6H2v14a2 2 0 0 0 2 2h14v-2H4V6z'/></svg>"); }
+.icon-download { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z'/></svg>"); }
+.icon-speaker { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05A4.5 4.5 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06a9 9 0 0 0 0-17.54z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05A4.5 4.5 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06a9 9 0 0 0 0-17.54z'/></svg>"); }
+.icon-home    { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z'/></svg>"); }
+.icon-globe   { mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm7 6h-3a13 13 0 0 0-1.5-3.6A8 8 0 0 1 19 8zm-7-5.5A11 11 0 0 1 15.5 8h-7A11 11 0 0 1 12 2.5zM3.5 14a8 8 0 0 1 0-4h3.2a18 18 0 0 0 0 4H3.5zm.8 2h3a13 13 0 0 0 1.5 3.6A8 8 0 0 1 4.3 16zm3-8h-3A8 8 0 0 1 8.8 4.4 13 13 0 0 0 7.3 8zm4.7 13.5A11 11 0 0 1 8.5 16h7a11 11 0 0 1-3.5 5.5zM16.2 14H7.8a16 16 0 0 1 0-4h8.4a16 16 0 0 1 0 4zm.5 5.6a13 13 0 0 0 1.5-3.6h3a8 8 0 0 1-4.5 3.6zm1.8-9.6a18 18 0 0 0 0-4h3.2a8 8 0 0 1 0 4h-3.2z'/></svg>"); -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm7 6h-3a13 13 0 0 0-1.5-3.6A8 8 0 0 1 19 8zm-7-5.5A11 11 0 0 1 15.5 8h-7A11 11 0 0 1 12 2.5zM3.5 14a8 8 0 0 1 0-4h3.2a18 18 0 0 0 0 4H3.5zm.8 2h3a13 13 0 0 0 1.5 3.6A8 8 0 0 1 4.3 16zm3-8h-3A8 8 0 0 1 8.8 4.4 13 13 0 0 0 7.3 8zm4.7 13.5A11 11 0 0 1 8.5 16h7a11 11 0 0 1-3.5 5.5zM16.2 14H7.8a16 16 0 0 1 0-4h8.4a16 16 0 0 1 0 4zm.5 5.6a13 13 0 0 0 1.5-3.6h3a8 8 0 0 1-4.5 3.6zm1.8-9.6a18 18 0 0 0 0-4h3.2a8 8 0 0 1 0 4h-3.2z'/></svg>"); }
+
+/* =========================================================
+   SCROLL PROGRESS BAR (fixed at very top)
+   ========================================================= */
+.scroll-progress {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: transparent;
+  z-index: 200;
+  pointer-events: none;
+}
+.scroll-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  transition: width 50ms linear;
+}
+
+/* =========================================================
+   TOP NAVIGATION
+   ========================================================= */
+.top-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: var(--nav-h);
+  padding: 0 12px;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  z-index: 100;
+  flex-shrink: 0;
+}
+.nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px; height: 36px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition);
+}
+.nav-btn:hover { background: var(--accent-soft); }
+.nav-btn .i { width: 20px; height: 20px; }
+.nav-tabs {
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  flex: 1;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 0 8px;
+}
+.nav-tabs::-webkit-scrollbar { display: none; }
+.nav-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  position: relative;
+  transition: all var(--transition);
+}
+.nav-tab:hover { background: var(--accent-soft); color: var(--text); }
+.nav-tab.active {
+  background: var(--accent);
+  color: #fff;
+}
+.nav-tab .tab-icon { width: 16px; height: 16px; }
+.nav-tab .tab-label { display: inline; }
+.nav-tab .tab-check {
+  width: 14px; height: 14px;
+  margin-left: 2px;
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+.nav-tab.complete .tab-check { opacity: 1; color: var(--success); }
+
+/* =========================================================
+   APP SHELL — sidebar + main
+   ========================================================= */
+.app-shell {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  background: var(--bg-elev);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transition: transform var(--transition), width var(--transition);
+  position: relative;
+}
+.sidebar.hidden-desktop {
+  display: none;
+}
+.sidebar-close {
+  display: none;
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 32px; height: 32px;
+  border: none;
+  background: var(--bg);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+}
+.sidebar-section { display: flex; flex-direction: column; gap: 8px; }
+.sidebar-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.sidebar-label .i { width: 14px; height: 14px; }
+.progress-track {
+  height: 8px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--success));
+  border-radius: 99px;
+  transition: width 400ms ease;
+}
+.progress-text { font-size: 12px; color: var(--text-muted); }
+.timer-display {
+  font-size: 32px;
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+.timer-controls {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+.timer-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  transition: all var(--transition);
+}
+.timer-btn:hover { background: var(--accent-soft); border-color: var(--accent); }
+.timer-btn.primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.timer-btn.primary:hover { background: var(--accent-hover); }
+.toc-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1px; }
+.toc-link {
+  display: block;
+  padding: 6px 10px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  border-left: 2px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition);
+  line-height: 1.4;
+}
+.toc-link:hover { background: var(--accent-soft); color: var(--text); }
+.toc-link.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-left-color: var(--accent);
+  font-weight: 600;
+}
+
+/* Mobile overlay */
+.mobile-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 90;
+  backdrop-filter: blur(2px);
+}
+.mobile-overlay.open { display: block; }
+
+/* =========================================================
+   MAIN CONTENT
+   ========================================================= */
+.main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+}
+.lesson { display: none; max-width: 860px; margin: 0 auto; }
+.lesson.active { display: block; }
+
+/* Lesson Hero */
+.lesson-hero {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 24px;
+  align-items: center;
+  padding: 28px;
+  margin-bottom: 32px;
+  background: linear-gradient(135deg, var(--accent-soft), transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.hero-module {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.hero-title {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0 0 8px;
+  color: var(--text);
+}
+.hero-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0;
+}
+.hero-illustration { display: flex; align-items: center; justify-content: center; }
+.hero-illustration svg { width: 100%; height: auto; max-height: 200px; }
+
+/* Headings & Text */
+.section-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 36px 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border);
+  color: var(--text);
+}
+.section-heading .i { width: 22px; height: 22px; color: var(--accent); }
+
+/* Accordions */
+.accordion-group { display: flex; flex-direction: column; gap: 8px; }
+.accordion {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elev);
+  overflow: hidden;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.accordion:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); }
+.accordion.open { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.accordion-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 16px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 14.5px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.accordion-header:hover { background: var(--accent-soft); }
+.accordion-chevron {
+  width: 18px; height: 18px;
+  flex-shrink: 0;
+  color: var(--accent);
+  transition: transform var(--transition);
+}
+.accordion.open .accordion-chevron { transform: rotate(180deg); }
+.accordion-title { flex: 1; }
+.tts-btn {
+  width: 28px; height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  border-radius: 50%;
+  color: var(--text-muted);
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+.tts-btn:hover { color: var(--accent); border-color: var(--accent); }
+.tts-btn.speaking { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+.tts-btn .i { width: 14px; height: 14px; }
+.accordion-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 350ms ease;
+}
+.accordion.open .accordion-body { max-height: 4000px; }
+.accordion-content {
+  padding: 0 16px 16px 44px;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.accordion-content p { margin: 0 0 12px; }
+.accordion-content ul, .accordion-content ol { margin: 0 0 12px; padding-left: 20px; }
+.accordion-content li { margin-bottom: 6px; }
+.accordion-content strong { color: var(--text); }
+
+/* Correction callout */
+.note-correction {
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  margin: 12px 0;
+  background: rgba(217, 119, 6, 0.08);
+  border-left: 3px solid var(--warning);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 13px;
+}
+.note-icon { color: var(--warning); width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; }
+.note-correction strong { color: var(--warning); }
+body[data-theme="dark"] .note-correction { background: rgba(245, 158, 11, 0.12); }
+
+/* Tables */
+.table-wrap {
+  overflow-x: auto;
+  margin: 16px 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 500px;
+}
+.table-wrap th, .table-wrap td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.table-wrap th {
+  background: var(--accent-soft);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.table-wrap tr:last-child td { border-bottom: none; }
+
+/* Flashcards */
+.flashcards-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  transition: all var(--transition);
+}
+.btn-secondary:hover:not(:disabled) { background: var(--accent-soft); border-color: var(--accent); }
+.btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+.flashcards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+.flashcard {
+  perspective: 1000px;
+  height: 160px;
+  cursor: pointer;
+}
+.flashcard-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 600ms cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+.flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+.flashcard-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+.flashcard-front {
+  background: linear-gradient(135deg, var(--accent-soft), var(--bg-elev));
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+}
+.flashcard-back {
+  background: var(--bg-elev);
+  transform: rotateY(180deg);
+  font-size: 12.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  border-color: var(--accent);
+}
+
+/* Glossary */
+.glossary-search {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elev);
+  color: var(--text);
+  font-size: 14px;
+  margin-bottom: 12px;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.glossary-search:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.glossary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+}
+.glossary-item {
+  padding: 10px 14px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition);
+}
+.glossary-item:hover { background: var(--accent-soft); }
+.glossary-item dt {
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 13.5px;
+  margin-bottom: 2px;
+}
+.glossary-item dd {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.glossary-empty {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 13px;
+}
+
+/* Quiz */
+.quiz-best {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+.quiz-best .i { width: 14px; height: 14px; }
+.quiz-body { display: flex; flex-direction: column; gap: 16px; }
+.quiz-question {
+  padding: 16px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.quiz-question h4 {
+  margin: 0 0 10px;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+.quiz-q-num {
+  display: inline-block;
+  min-width: 22px;
+  height: 22px;
+  line-height: 22px;
+  text-align: center;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  margin-right: 6px;
+  padding: 0 6px;
+}
+.quiz-option {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  margin: 4px 0;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.quiz-option:hover { background: var(--accent-soft); border-color: var(--accent); }
+.quiz-option.selected {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.quiz-option.correct {
+  background: var(--success);
+  color: #fff;
+  border-color: var(--success);
+}
+.quiz-option.incorrect {
+  background: var(--danger);
+  color: #fff;
+  border-color: var(--danger);
+}
+.quiz-option.correct::after, .quiz-option.incorrect::after {
+  content: '';
+  display: inline-block;
+  width: 14px; height: 14px;
+  float: right;
+  margin-top: 2px;
+  background: #fff;
+  mask: center / contain no-repeat;
+  -webkit-mask: center / contain no-repeat;
+}
+.quiz-option.correct::after {
+  mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/></svg>");
+  -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/></svg>");
+}
+.quiz-option.incorrect::after {
+  mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/></svg>");
+  -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/></svg>");
+}
+.quiz-actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-weight: 600;
+  transition: background var(--transition);
+}
+.btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.quiz-feedback {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-weight: 600;
+  display: none;
+}
+.quiz-feedback.show { display: block; }
+.quiz-feedback.pass { background: rgba(5, 150, 105, 0.1); color: var(--success); border: 1px solid var(--success); }
+.quiz-feedback.fail { background: rgba(220, 38, 38, 0.08); color: var(--danger); border: 1px solid var(--danger); }
+
+/* Notes */
+.notes-textarea {
+  width: 100%;
+  min-height: 140px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elev);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.notes-textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.notes-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.notes-status {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+.notes-status.saved { color: var(--success); }
+
+/* Mark Complete */
+.complete-section {
+  margin: 32px 0 24px;
+  padding: 20px;
+  background: var(--bg-elev);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  text-align: center;
+}
+.btn-complete {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: 2px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 700;
+  transition: all var(--transition);
+}
+.btn-complete:hover { background: var(--accent); color: #fff; }
+.btn-complete.done {
+  background: var(--success);
+  color: #fff;
+  border-color: var(--success);
+}
+
+/* =========================================================
+   SEARCH MODAL
+   ========================================================= */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 10vh;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+.modal.open { display: flex; }
+.modal-content {
+  background: var(--bg-elev);
+  width: 92%;
+  max-width: 640px;
+  max-height: 75vh;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+}
+.search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 16px;
+  outline: none;
+  padding: 6px 0;
+}
+.search-input::placeholder { color: var(--text-muted); }
+.modal-close {
+  width: 32px; height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: var(--bg);
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+}
+.modal-close:hover { background: var(--accent-soft); color: var(--accent); }
+.search-results {
+  overflow-y: auto;
+  padding: 8px;
+}
+.search-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.search-result {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition);
+  border-bottom: 1px solid var(--border);
+}
+.search-result:last-child { border-bottom: none; }
+.search-result:hover { background: var(--accent-soft); }
+.search-result .sr-context {
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+.search-result .sr-text {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.5;
+}
+.search-result mark {
+  background: rgba(245, 158, 11, 0.4);
+  color: inherit;
+  padding: 0 2px;
+  border-radius: 2px;
+  font-weight: 600;
+}
+body[data-theme="dark"] .search-result mark {
+  background: rgba(245, 158, 11, 0.5);
+  color: var(--text);
+}
+.search-hint {
+  padding: 8px 16px;
+  font-size: 11px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+.search-hint kbd {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+/* =========================================================
+   SVG ILLUSTRATION THEMING (classes used inside SVGs)
+   ========================================================= */
+.svg-accent { fill: var(--accent); }
+.svg-accent-soft { fill: var(--accent); opacity: 0.3; }
+.svg-accent-faint { fill: var(--accent); opacity: 0.12; }
+.svg-bg { fill: var(--bg-elev); }
+.svg-border { stroke: var(--border); fill: none; }
+.svg-text { fill: var(--text); }
+.svg-muted { fill: var(--text-muted); }
+.svg-success { fill: var(--success); }
+.svg-stroke-accent { stroke: var(--accent); fill: none; }
+.svg-stroke-muted { stroke: var(--text-muted); fill: none; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width: 900px) {
+  .sidebar {
+    position: fixed;
+    top: var(--nav-h);
+    left: 0;
+    bottom: 0;
+    z-index: 95;
+    transform: translateX(-100%);
+    box-shadow: var(--shadow-lg);
+  }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-close { display: inline-flex; align-items: center; justify-content: center; }
+  .sidebar.hidden-desktop { display: flex; }
+  .main { padding: 20px; }
+  .lesson-hero { grid-template-columns: 1fr; text-align: center; }
+  .hero-illustration { order: -1; max-width: 200px; margin: 0 auto; }
+  .hero-title { font-size: 22px; }
+}
+@media (max-width: 520px) {
+  .top-nav { padding: 0 8px; gap: 2px; }
+  .nav-btn { width: 32px; height: 32px; }
+  .nav-tab { padding: 6px 8px; font-size: 11px; }
+  .nav-tab .tab-label { display: none; }
+  .nav-tab .tab-icon { width: 18px; height: 18px; }
+  .main { padding: 14px; }
+  .lesson-hero { padding: 18px; margin-bottom: 20px; }
+  .hero-title { font-size: 18px; }
+  .section-heading { font-size: 17px; margin: 24px 0 12px; }
+  .accordion-content { padding: 0 12px 12px 36px; font-size: 13px; }
+  .flashcards-grid { grid-template-columns: 1fr; }
+  .quiz-actions { flex-direction: column; }
+  .btn-primary, .btn-secondary { width: 100%; justify-content: center; }
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* =========================================================
+   PRINT
+   ========================================================= */
+@media print {
+  .top-nav, .sidebar, .scroll-progress, .modal, .mobile-overlay,
+  .action-bar, .quiz-actions, .quiz-best, .btn-complete,
+  .notes-footer, .flashcards-controls, .tts-btn, .sidebar-close,
+  .glossary-search { display: none !important; }
+  body { display: block; height: auto; overflow: visible; background: #fff; color: #000; }
+  .app-shell { display: block; }
+  .main { overflow: visible; padding: 0; }
+  .lesson { display: block !important; page-break-after: always; max-width: 100%; }
+  .accordion-body { max-height: none !important; overflow: visible !important; }
+  .accordion-header { cursor: default; }
+  .accordion-chevron { display: none; }
+  .note-correction { border: 1px solid #999; background: #f8f8f8; color: #000; }
+  .flashcard { perspective: none; height: auto; }
+  .flashcard-inner { transform: none !important; }
+  .flashcard-face { position: static; backface-visibility: visible; border: 1px solid #999; margin-bottom: 4px; }
+  .flashcard-back { transform: none; }
+  a { color: #000; text-decoration: underline; }
+}
+</style>
+</head>
+<body data-theme="light">
+
+<!-- Scroll Progress Bar -->
+<div class="scroll-progress"><div class="scroll-progress-bar" id="scrollProgressBar"></div></div>
+
+<!-- Top Navigation -->
+<nav class="top-nav">
+  <button class="nav-btn" id="burgerBtn" aria-label="Toggle sidebar"><span class="i icon-menu"></span></button>
+  <div class="nav-tabs" id="navTabs" role="tablist"></div>
+  <button class="nav-btn" id="searchBtn" aria-label="Search (Ctrl+K)"><span class="i icon-search"></span></button>
+  <button class="nav-btn" id="printBtn" aria-label="Print"><span class="i icon-print"></span></button>
+  <button class="nav-btn" id="themeBtn" aria-label="Toggle theme"><span class="i icon-moon" id="themeIcon"></span></button>
+</nav>
+
+<!-- App Shell -->
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar" aria-label="Sidebar">
+    <button class="sidebar-close" id="sidebarClose" aria-label="Close sidebar"><span class="i icon-close"></span></button>
+    
+    <div class="sidebar-section">
+      <div class="sidebar-label"><span class="i icon-target"></span> Learning Progress</div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">0 of 6 modules complete</div>
+    </div>
+    
+    <div class="sidebar-section">
+      <div class="sidebar-label"><span class="i icon-hourglass"></span> Focus Timer</div>
+      <div class="timer-display" id="timerDisplay">25:00</div>
+      <div class="timer-controls">
+        <button class="timer-btn primary" id="timerStart"><span class="i icon-play"></span> Start</button>
+        <button class="timer-btn" id="timerReset" aria-label="Reset timer"><span class="i icon-reset"></span></button>
+      </div>
+    </div>
+    
+    <div class="sidebar-section">
+      <div class="sidebar-label"><span class="i icon-list"></span> Table of Contents</div>
+      <ul class="toc-list" id="tocList"></ul>
+    </div>
+  </aside>
+
+  <main class="main" id="mainContent" role="main">
+    <!-- ============== WELCOME ============== -->
+    <section class="lesson active" id="lesson-welcome" data-lesson-id="welcome">
+      <div class="lesson-hero">
+        <div>
+          <div class="hero-module">Getting Started</div>
+          <h1 class="hero-title">Interactive Web Reviewer</h1>
+          <p class="hero-desc">The Contemporary World — a complete study tool covering six core modules.</p>
+        </div>
+        <div class="hero-illustration">
+          <svg viewBox="0 0 260 200" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="60" width="240" height="120" rx="12" class="svg-accent-faint"/>
+            <circle cx="50" cy="90" r="14" class="svg-accent-soft"/>
+            <circle cx="210" cy="90" r="14" class="svg-accent-soft"/>
+            <circle cx="130" cy="130" r="20" class="svg-accent"/>
+            <path d="M64 90 Q97 110 110 130" class="svg-stroke-accent" stroke-width="2" stroke-dasharray="4 3"/>
+            <path d="M196 90 Q163 110 150 130" class="svg-stroke-accent" stroke-width="2" stroke-dasharray="4 3"/>
+            <text x="130" y="135" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">YOU</text>
+            <text x="130" y="42" text-anchor="middle" font-size="11" font-weight="600" class="svg-text">STUDY SESSION</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="accordion open">
+        <button class="accordion-header" aria-expanded="true">
+          <span class="i accordion-chevron icon-chevron"></span>
+          <span class="accordion-title">How to Use This Reviewer</span>
+        </button>
+        <div class="accordion-body">
+          <div class="accordion-content">
+            <p>This study tool covers six modules of <strong>The Contemporary World</strong>. Here is what is included:</p>
+            <ul>
+              <li><strong>Accordion lessons</strong> — expand each sub-lesson to read its content.</li>
+              <li><strong>Correction callouts</strong> — look for the orange boxes where source material needs clarification.</li>
+              <li><strong>Text-to-Speech</strong> — click the speaker icon in any lesson header to listen.</li>
+              <li><strong>Flashcards</strong> — flip cards by clicking; use the shuffle button to randomize.</li>
+              <li><strong>Glossary</strong> — filter terms by typing in the search bar.</li>
+              <li><strong>Quiz</strong> — randomized questions with instant feedback.</li>
+              <li><strong>Notes</strong> — auto-saved as you type; export to .txt anytime.</li>
+              <li><strong>Progress</strong> — mark each module complete to track your study.</li>
+            </ul>
+            <p><strong>Shortcuts:</strong> <code>Ctrl+K</code> search · <code>Alt+←/→</code> navigate lessons · <code>Esc</code> close modals.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion">
+        <button class="accordion-header" aria-expanded="false">
+          <span class="i accordion-chevron icon-chevron"></span>
+          <span class="accordion-title">About the Correction Notes</span>
+        </button>
+        <div class="accordion-body">
+          <div class="accordion-content">
+            <p>This reviewer <strong>preserves the source material as written</strong>. Where minor errors, outdated statistics, or interpretive claims exist in the original slides, a small correction note appears in an orange box like the one below.</p>
+            <div class="note-correction">
+              <span class="i note-icon icon-warning"></span>
+              <div><strong>Note / Correction:</strong> This is an example of a correction callout. The original source text is preserved above; this note supplies the accurate information.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glossary-section">
+        <h2 class="section-heading"><span class="i icon-book"></span> Glossary</h2>
+        <input class="glossary-search" placeholder="Filter terms..." data-glossary="welcome">
+        <dl class="glossary-list" id="glossary-welcome">
+          <div class="glossary-item"><dt>Global North</dt><dd>Political-economic term for wealthy, industrialized countries.</dd></div>
+          <div class="glossary-item"><dt>Global South</dt><dd>Countries with lower industrialization, shaped by colonial history.</dd></div>
+          <div class="glossary-item"><dt>Brandt Line</dt><dd>Approximate visual division between Global North and South.</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- ============== MODULE 1 ============== -->
+    <section class="lesson" id="lesson-module-1" data-lesson-id="module-1">
+      <div class="lesson-hero">
+        <div>
+          <div class="hero-module">Module 1</div>
+          <h1 class="hero-title">The Global North and Global South</h1>
+          <p class="hero-desc">The political-economic divide that shapes the modern world.</p>
+        </div>
+        <div class="hero-illustration">
+          <svg viewBox="0 0 260 200" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="20" width="240" height="75" rx="10" class="svg-accent-soft"/>
+            <rect x="10" y="105" width="240" height="75" rx="10" class="svg-accent-faint"/>
+            <path d="M10 100 Q70 90 130 98 T250 100" class="svg-stroke-accent" stroke-width="2" stroke-dasharray="6 4"/>
+            <text x="130" y="55" text-anchor="middle" font-size="11" font-weight="700" class="svg-text">GLOBAL NORTH</text>
+            <text x="130" y="150" text-anchor="middle" font-size="11" font-weight="700" class="svg-text">GLOBAL SOUTH</text>
+            <circle cx="60" cy="75" r="8" class="svg-accent"/>
+            <circle cx="190" cy="70" r="8" class="svg-accent"/>
+            <circle cx="80" cy="160" r="6" class="svg-muted"/>
+            <circle cx="180" cy="155" r="7" class="svg-muted"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="accordion-group">
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false" data-lesson="1.1">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">1.1 — What is the Global North?</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>A group of some of the richest and most developed countries in the world.</p>
+            <p>They have advanced technology and strong economies.</p>
+            <p>People generally enjoy a better quality of life and higher standard of living.</p>
+            <div class="note-correction"><span class="i note-icon icon-warning"></span><div><strong>Note / Correction:</strong> "Global North" is not a formal legal category; different institutions use different lists. It is a political-economic shorthand.</div></div>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">1.2 — Wealth Over Location</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li>"Global North" is primarily a political and economic term, not a geographic one.</li>
+              <li>Not every country in the Northern Hemisphere is wealthy.</li>
+              <li>Some countries in the Southern Hemisphere have highly developed economies.</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">1.3 — Economic Powerhouses</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li>High average incomes per person.</li>
+              <li>Strong industries in technology, finance, manufacturing, and services.</li>
+              <li>Economies are generally less dependent on traditional agriculture.</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">1.4 — High Standards of Living</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li>Access to advanced healthcare and medicine.</li>
+              <li>Strong education systems.</li>
+              <li>Reliable infrastructure, including roads, electricity, and internet.</li>
+              <li>Generally high levels of access to essential services.</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">1.5 — Global North in the West</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>Example: The America &amp; Europe.</p>
+            <ul>
+              <li>North America: United States and Canada.</li>
+              <li>Western Europe: United Kingdom, Germany, France, and neighboring countries.</li>
+            </ul>
+            <p>These regions include many of the world's most developed economies.</p>
+            <div class="note-correction"><span class="i note-icon icon-warning"></span><div><strong>Note / Correction:</strong> "The America &amp; Europe" is likely a typo for "The Americas and Europe" or "North America and Europe." The original wording is preserved.</div></div>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">1.6 — Global North in the East &amp; South</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li>Asian: Japan, South Korea, and Singapore — known for advanced technology and highly developed economies.</li>
+              <li>Southern Hemisphere: Australia and New Zealand.</li>
+              <li>Despite their southern geographic location, Australia and New Zealand are generally considered part of the Global North economically.</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">1.7 — Conclusion</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li>The Global North is about economic development and global influence, not simply geography.</li>
+              <li>It generally refers to countries with high levels of wealth, development, and access to advanced technology and services.</li>
+              <li>Location does not determine whether a country belongs to the Global North.</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">1.8 — The Industrial Revolution: A World Transformed</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li>Increased industrialization and economic growth.</li>
+              <li>Expanded global trade and colonialism.</li>
+              <li>Created economic differences between countries.</li>
+              <li>Helped shape the Global South.</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">1.9 — What is the "Global South"?</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>Refers to countries that are generally developing or have lower levels of economic development compared with wealthier countries. The term is based more on economic conditions, history, and global inequalities than on a country's location on the map.</p>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">1.10 — Lower Level of Industrialization</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li>Economies rely more on agriculture and raw material extraction.</li>
+              <li>They export resources (e.g., copper, bananas, oil).</li>
+              <li>They import finished, high-tech goods from the North.</li>
+              <li>Lack of a strong industrial base makes it hard to generate high national income and build long-term wealth.</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">1.11 — Lower Human Development Index (HDI)</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <p><strong>HDI:</strong> A UN measure of how well people live in a country.</p>
+            <ul>
+              <li><strong>Health:</strong> Life expectancy and infant survival.</li>
+              <li><strong>Education:</strong> Literacy and school attendance.</li>
+            </ul>
+            <p>A lower HDI means lower life expectancy, higher infant mortality, lower literacy rates, and lack of basic services (sanitation, clean water).</p>
+            <div style="text-align:center;margin:12px 0;">
+              <svg viewBox="0 0 300 140" style="max-width:280px;width:100%;" xmlns="http://www.w3.org/2000/svg">
+                <line x1="30" y1="120" x2="280" y2="120" stroke="currentColor" class="svg-muted" stroke-width="1"/>
+                <rect x="50" y="40" width="40" height="80" class="svg-accent"/>
+                <rect x="120" y="70" width="40" height="50" class="svg-accent-soft"/>
+                <rect x="190" y="90" width="40" height="30" class="svg-accent-faint"/>
+                <text x="70" y="135" text-anchor="middle" font-size="10" class="svg-text">Health</text>
+                <text x="140" y="135" text-anchor="middle" font-size="10" class="svg-text">Education</text>
+                <text x="210" y="135" text-anchor="middle" font-size="10" class="svg-text">Income</text>
+              </svg>
+            </div>
+            <div class="note-correction"><span class="i note-icon icon-warning"></span><div><strong>Note / Correction:</strong> The source definition omits the income dimension. The standard HDI has three dimensions: health, education, and <strong>income</strong> (GNI per capita). The chart above reflects all three.</div></div>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">1.12 — The Legacy of Colonialism</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li><strong>Colonial borders:</strong> Borders were created without considering ethnic groups.</li>
+              <li><strong>Infrastructure:</strong> Ports and roads were built mainly to take resources, not to help local communities.</li>
+              <li><strong>Local industries:</strong> Local businesses and industries were weakened or stopped.</li>
+            </ul>
+            <p>After independence, nations were left with weak institutions, economies built on extraction, and internal conflicts.</p>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">1.13 — Global Economic Rules and Dependency</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>The Global North has historically shaped the rules of the world economy. Global South countries often have limited control over the prices of their raw materials.</p>
+            <p>International institutions, such as the IMF and World Bank, may promote policies that:</p>
+            <ul>
+              <li>Favor foreign investors.</li>
+              <li>Require spending cuts that can increase inequality.</li>
+              <li>Contribute to long-term economic dependency.</li>
+            </ul>
+            <div class="note-correction"><span class="i note-icon icon-warning"></span><div><strong>Note / Correction:</strong> This is a critical/dependency-theory perspective. It is a legitimate interpretive claim, not a neutral fact.</div></div>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">1.14 — Why is the Shanty a Symbol of the Global South?</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li>Show determination and the ability to endure hardship.</li>
+              <li>Reflect limited access to the benefits of globalization.</li>
+              <li>Remind us of communities left behind by global economic growth.</li>
+              <li>Demonstrate people's strength and determination to survive.</li>
+            </ul>
+            <div style="text-align:center;margin:12px 0;">
+              <svg viewBox="0 0 300 120" style="max-width:260px;width:100%;" xmlns="http://www.w3.org/2000/svg">
+                <rect x="40" y="60" width="60" height="50" class="svg-accent-soft"/>
+                <polygon points="40,60 70,35 100,60" class="svg-accent"/>
+                <rect x="120" y="70" width="50" height="40" class="svg-accent-faint"/>
+                <polygon points="120,70 145,50 170,70" class="svg-accent-soft"/>
+                <rect x="190" y="55" width="70" height="55" class="svg-accent-soft"/>
+                <polygon points="190,55 225,30 260,55" class="svg-accent"/>
+                <line x1="20" y1="110" x2="280" y2="110" class="svg-stroke-muted" stroke-width="1"/>
+              </svg>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">1.15 — The Contradiction of Globalization</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li>Creates both wealth and poverty.</li>
+              <li>Brings some countries into modern development.</li>
+              <li>Leaves others struggling to keep up.</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">1.16 — The Neoliberal Critique</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li>Worsening economic inequality.</li>
+              <li>Encouraging the exploitation of natural resources (mining and oil).</li>
+              <li>Encouraging the exploitation of low-cost labor (low wages and unsafe work conditions).</li>
+            </ul>
+            <div class="note-correction"><span class="i note-icon icon-warning"></span><div><strong>Note / Correction:</strong> "Neoliberal critique" here means a critique <em>of</em> neoliberalism. Neoliberalism specifically refers to market liberalization, privatization, deregulation, and austerity. The slide uses it loosely to mean critique of market-driven globalization.</div></div>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">1.17 — The Brandt Line</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>Visual map separating the wealthier "Global North" from the poorer "Global South." The source map shows a key labeling cyan as "Poor South" and purple as "Rich North."</p>
+            <div class="note-correction"><span class="i note-icon icon-warning"></span><div><strong>Note / Correction:</strong> The map and key on page 10 appear visually inverted/conflicting. Standard Brandt Line interpretation: wealthy industrialized regions (North America, Western Europe, Japan, Australia/NZ) = Global North; Africa, Latin America, much of Asia = Global South. The Brandt Line is approximate and dated, not a strict boundary.</div></div>
+          </div></div>
+        </div>
+      </div>
+
+      <div class="flashcards-section">
+        <h2 class="section-heading"><span class="i icon-cards"></span> Flashcards</h2>
+        <div class="flashcards-controls"><button class="btn-secondary" data-shuffle="module-1"><span class="i icon-shuffle"></span> Shuffle</button></div>
+        <div class="flashcards-grid" id="flashcards-module-1"></div>
+      </div>
+
+      <div class="glossary-section">
+        <h2 class="section-heading"><span class="i icon-book"></span> Glossary</h2>
+        <input class="glossary-search" placeholder="Filter terms..." data-glossary="module-1">
+        <dl class="glossary-list" id="glossary-module-1"></dl>
+      </div>
+
+      <div class="quiz-section">
+        <h2 class="section-heading"><span class="i icon-quiz"></span> Module Quiz</h2>
+        <div class="quiz-best" id="quizBest-module-1"><span class="i icon-target"></span> <span>Best: —</span></div>
+        <div class="quiz-body" id="quizBody-module-1"></div>
+        <div class="quiz-actions">
+          <button class="btn-primary" data-quiz-submit="module-1">Submit Answers</button>
+          <button class="btn-secondary" data-quiz-reset="module-1" disabled><span class="i icon-reset"></span> Reset</button>
+        </div>
+        <div class="quiz-feedback" id="quizFeedback-module-1" aria-live="polite"></div>
+      </div>
+
+      <div class="complete-section">
+        <button class="btn-complete" data-complete="module-1"><span class="i icon-check"></span> <span>Mark as Complete</span></button>
+      </div>
+
+      <div class="notes-section">
+        <h2 class="section-heading"><span class="i icon-note"></span> Notes</h2>
+        <textarea class="notes-textarea" id="notes-module-1" data-notes="module-1" placeholder="Write your notes for this module..."></textarea>
+        <div class="notes-footer">
+          <span class="notes-status" id="notesStatus-module-1">Auto-saves as you type</span>
+          <button class="btn-secondary" data-export-notes="module-1"><span class="i icon-download"></span> Export .txt</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== MODULE 2 ============== -->
+    <section class="lesson" id="lesson-module-2" data-lesson-id="module-2">
+      <div class="lesson-hero">
+        <div>
+          <div class="hero-module">Module 2</div>
+          <h1 class="hero-title">Historical Foundations of Globalization</h1>
+          <p class="hero-desc">From early migration to the Age of Discovery.</p>
+        </div>
+        <div class="hero-illustration">
+          <svg viewBox="0 0 260 200" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="130" cy="100" r="80" class="svg-accent-faint"/>
+            <polygon points="90,110 110,60 140,55 165,90 150,130 100,140" class="svg-accent-soft"/>
+            <path d="M60 120 Q80 100 100 110 T140 100 T180 120" class="svg-stroke-accent" stroke-width="2"/>
+            <circle cx="100" cy="110" r="4" class="svg-accent"/>
+            <circle cx="140" cy="100" r="4" class="svg-accent"/>
+            <circle cx="180" cy="120" r="4" class="svg-accent"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="accordion-group">
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">2.1 — Early Human Migration</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li>Map shows migration out of Africa about 100,000 years ago.</li>
+              <li>Early humans fanned out across Asia, Europe, Australia, and the Americas.</li>
+              <li>By 12,000 years ago, humans had reached the Americas.</li>
+            </ul>
+            <p><strong>Slide question:</strong> "According to the map, which continent did humans reach last?"<br><strong>Answer from map:</strong> South America (approximately 11,000 years ago).</p>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">2.2 — Evolution of the Skull / From Hominid to Human Today</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li><strong>Australopithecus (Hominid):</strong> Height 1.10 m, Weight 40 kg, Walked upright. 3,500,000 / 2,500,000 years ago.</li>
+              <li><strong>Homo Habilis:</strong> Height 1.59 m, Weight 50 kg, First Tools, Could speak. 2,300,000 / 1,800,000 years ago.</li>
+              <li><strong>Homo Erectus:</strong> Height 1.60 m, Weight 60 kg, Discovery of Fire, Hunted in groups. 1,900,000 / 400,000 years ago.</li>
+              <li><strong>Homo Neanderthalensis:</strong> Height 1.65 m, Weight 80 kg, First burials, Specialised tools. 150,000 / 35,000 years ago.</li>
+              <li><strong>Homo Sapiens:</strong> Height 1.70 m, Weight 70 kg, Examples of art, Tools made of bone and horn. 120,000 years ago (40,000 years ago in Europe).</li>
+            </ul>
+            <div class="note-correction"><span class="i note-icon icon-warning"></span><div><strong>Note / Correction:</strong> The slide title "Evolution of the Skull" does not match the linear hominid timeline shown. Human evolution is branched, not a straight ladder; species coexisted. Dates are approximate.</div></div>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">2.3 — First River Valley Civilizations (3000 B.C.)</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>The term "First River Valley Civilizations" refers to the earliest civilizations that developed in the world, all of which emerged around major river systems.</p>
+            <p>These civilizations are considered "first" because they arose independently and laid the foundations for later civilizations in different parts of the world.</p>
+            <div class="note-correction"><span class="i note-icon icon-warning"></span><div><strong>Note / Correction:</strong> This is accurate for the major Afro-Eurasian river valley civilizations listed (Mesopotamia, Egypt, Indus Valley, China). It is not a universal rule that all early civilizations were river-based.</div></div>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">2.4 — Why Rivers Mattered</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li><strong>Water source:</strong> Rivers provided reliable freshwater for drinking, irrigation, and transportation, allowing agriculture to develop.</li>
+              <li><strong>Fertile soil:</strong> Annual flooding deposited fertile silt along riverbanks, creating ideal farming conditions.</li>
+              <li><strong>Transportation:</strong> Rivers served as natural highways for trade and communication, facilitating the exchange of goods, ideas, and culture.</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">2.5 — The Four First River Valley Civilizations</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li><strong>Mesopotamia (Tigris and Euphrates Rivers):</strong> Located in modern-day Iraq, developed advanced writing systems, complex social structures, and impressive architecture.</li>
+              <li><strong>Ancient Egypt (Nile River):</strong> Known for powerful pharaohs, magnificent pyramids, and sophisticated hieroglyphic writing.</li>
+              <li><strong>Indus Valley Civilization (Indus River):</strong> Located in present-day Pakistan and northwestern India; well-planned cities, advanced sanitation systems, unique writing system.</li>
+              <li><strong>Ancient China (Yellow River and Yangtze River):</strong> Intricate bronze work, elaborate silk production, strong emphasis on Confucianism.</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">2.6 — The Silk Road</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>Map shows the Silk Road connecting China, India, Persia, Arabia, Egypt, and Europe. Key points include Xi'an, Kashgar, Samarkand, Bukhara, Tashkent, Merv, Baghdad, Damascus, Istanbul, Baku, and Tbilisi.</p>
+            <p>The Silk Road was a network of trade and cultural exchange routes.</p>
+            <div style="text-align:center;margin:12px 0;">
+              <svg viewBox="0 0 320 100" style="max-width:300px;width:100%;" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 60 Q80 20 160 50 T300 50" class="svg-stroke-accent" stroke-width="2" stroke-dasharray="4 3"/>
+                <circle cx="20" cy="60" r="5" class="svg-accent"/>
+                <circle cx="90" cy="35" r="4" class="svg-accent"/>
+                <circle cx="160" cy="50" r="5" class="svg-accent"/>
+                <circle cx="230" cy="35" r="4" class="svg-accent"/>
+                <circle cx="300" cy="50" r="5" class="svg-accent"/>
+                <text x="20" y="85" text-anchor="middle" font-size="9" class="svg-text">Xi'an</text>
+                <text x="160" y="80" text-anchor="middle" font-size="9" class="svg-text">Samarkand</text>
+                <text x="300" y="85" text-anchor="middle" font-size="9" class="svg-text">Rome</text>
+              </svg>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">2.7 — The Age of Discovery</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>The results of the increasing interdependence of cultures and ecosystems that were once relatively isolated by distance — and of particular significance to the development of the world system — was the Age of Discovery.</p>
+            <p>Wherein the European sphere of influence began to be exported far beyond its physical boundaries by means of conquest and trade.</p>
+          </div></div>
+        </div>
+      </div>
+
+      <div class="flashcards-section">
+        <h2 class="section-heading"><span class="i icon-cards"></span> Flashcards</h2>
+        <div class="flashcards-controls"><button class="btn-secondary" data-shuffle="module-2"><span class="i icon-shuffle"></span> Shuffle</button></div>
+        <div class="flashcards-grid" id="flashcards-module-2"></div>
+      </div>
+
+      <div class="glossary-section">
+        <h2 class="section-heading"><span class="i icon-book"></span> Glossary</h2>
+        <input class="glossary-search" placeholder="Filter terms..." data-glossary="module-2">
+        <dl class="glossary-list" id="glossary-module-2"></dl>
+      </div>
+
+      <div class="quiz-section">
+        <h2 class="section-heading"><span class="i icon-quiz"></span> Module Quiz</h2>
+        <div class="quiz-best" id="quizBest-module-2"><span class="i icon-target"></span> <span>Best: —</span></div>
+        <div class="quiz-body" id="quizBody-module-2"></div>
+        <div class="quiz-actions">
+          <button class="btn-primary" data-quiz-submit="module-2">Submit Answers</button>
+          <button class="btn-secondary" data-quiz-reset="module-2" disabled><span class="i icon-reset"></span> Reset</button>
+        </div>
+        <div class="quiz-feedback" id="quizFeedback-module-2" aria-live="polite"></div>
+      </div>
+
+      <div class="complete-section">
+        <button class="btn-complete" data-complete="module-2"><span class="i icon-check"></span> <span>Mark as Complete</span></button>
+      </div>
+
+      <div class="notes-section">
+        <h2 class="section-heading"><span class="i icon-note"></span> Notes</h2>
+        <textarea class="notes-textarea" id="notes-module-2" data-notes="module-2" placeholder="Write your notes for this module..."></textarea>
+        <div class="notes-footer">
+          <span class="notes-status" id="notesStatus-module-2">Auto-saves as you type</span>
+          <button class="btn-secondary" data-export-notes="module-2"><span class="i icon-download"></span> Export .txt</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== MODULE 3 ============== -->
+    <section class="lesson" id="lesson-module-3" data-lesson-id="module-3">
+      <div class="lesson-hero">
+        <div>
+          <div class="hero-module">Module 3</div>
+          <h1 class="hero-title">Market Integration</h1>
+          <p class="hero-desc">How separate markets become one interconnected system.</p>
+        </div>
+        <div class="hero-illustration">
+          <svg viewBox="0 0 260 200" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="130" cy="100" r="85" class="svg-accent-faint"/>
+            <rect x="30" y="40" width="50" height="35" rx="6" class="svg-accent-soft"/>
+            <rect x="105" y="40" width="50" height="35" rx="6" class="svg-accent"/>
+            <rect x="180" y="40" width="50" height="35" rx="6" class="svg-accent-soft"/>
+            <rect x="67" y="130" width="50" height="35" rx="6" class="svg-accent-soft"/>
+            <rect x="143" y="130" width="50" height="35" rx="6" class="svg-accent"/>
+            <line x1="80" y1="75" x2="130" y2="75" class="svg-stroke-accent" stroke-width="2"/>
+            <line x1="155" y1="75" x2="205" y2="75" class="svg-stroke-accent" stroke-width="2"/>
+            <line x1="155" y1="75" x2="168" y2="130" class="svg-stroke-accent" stroke-width="2"/>
+            <line x1="130" y1="75" x2="92" y2="130" class="svg-stroke-accent" stroke-width="2"/>
+            <line x1="92" y1="148" x2="143" y2="148" class="svg-stroke-accent" stroke-width="2"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="accordion-group">
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">3.1 — Market Integration: How Markets Become One System</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>Goods, capital, information, and firms — connected across markets.</p>
+            <p>Market integration happens when separate markets become connected, so changes in price, supply, demand, capital, or information in one market affect others.</p>
+            <p>The result: decisions travel farther and faster.</p>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">3.2 — Four Forces That Make Integration Possible</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ol>
+              <li><strong>Technology:</strong> Real-time data, digital platforms, and communication.</li>
+              <li><strong>Transport:</strong> Faster logistics move products across distance.</li>
+              <li><strong>Trade policy:</strong> Lower barriers open access to new markets.</li>
+              <li><strong>Finance:</strong> Capital and payment systems connect economies.</li>
+            </ol>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">3.3 — Integration Is a System of Connected Flows</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li><strong>Inputs:</strong> Raw materials and suppliers.</li>
+              <li><strong>Production:</strong> Firms transform resources.</li>
+              <li><strong>Distribution:</strong> Logistics move goods.</li>
+              <li><strong>Consumers:</strong> Demand sends signals back.</li>
+            </ul>
+            <p>Integration strengthens when all three flows move reliably across the chain.</p>
+            <div style="text-align:center;margin:12px 0;">
+              <svg viewBox="0 0 340 60" style="max-width:320px;width:100%;" xmlns="http://www.w3.org/2000/svg">
+                <rect x="5" y="15" width="70" height="35" rx="6" class="svg-accent-soft"/>
+                <text x="40" y="38" text-anchor="middle" font-size="10" class="svg-text">Inputs</text>
+                <polygon points="80,32 90,26 90,38" class="svg-accent"/>
+                <rect x="95" y="15" width="70" height="35" rx="6" class="svg-accent"/>
+                <text x="130" y="38" text-anchor="middle" font-size="10" fill="#fff">Produce</text>
+                <polygon points="170,32 180,26 180,38" class="svg-accent"/>
+                <rect x="185" y="15" width="70" height="35" rx="6" class="svg-accent-soft"/>
+                <text x="220" y="38" text-anchor="middle" font-size="10" class="svg-text">Distribute</text>
+                <polygon points="260,32 270,26 270,38" class="svg-accent"/>
+                <rect x="275" y="15" width="60" height="35" rx="6" class="svg-accent"/>
+                <text x="305" y="38" text-anchor="middle" font-size="10" fill="#fff">Consume</text>
+              </svg>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">3.4 — Horizontal Integration</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>Companies operating at the same stage combine or coordinate.</p>
+            <p><strong>Purpose:</strong> Expand market share, reduce duplicate costs, reach more customers.</p>
+            <p><strong>Example:</strong> One restaurant group acquires another restaurant brand.</p>
+            <div style="text-align:center;margin:12px 0;">
+              <svg viewBox="0 0 300 70" style="max-width:280px;width:100%;" xmlns="http://www.w3.org/2000/svg">
+                <rect x="10" y="20" width="70" height="35" rx="6" class="svg-accent-soft"/>
+                <text x="45" y="43" text-anchor="middle" font-size="11" class="svg-text">Firm A</text>
+                <text x="105" y="43" text-anchor="middle" font-size="18" class="svg-accent">+</text>
+                <rect x="125" y="20" width="70" height="35" rx="6" class="svg-accent-soft"/>
+                <text x="160" y="43" text-anchor="middle" font-size="11" class="svg-text">Firm B</text>
+                <text x="215" y="43" text-anchor="middle" font-size="18" class="svg-accent">→</text>
+                <rect x="235" y="15" width="60" height="45" rx="6" class="svg-accent"/>
+                <text x="265" y="42" text-anchor="middle" font-size="10" fill="#fff">Larger</text>
+              </svg>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">3.5 — Vertical Integration</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>A company controls more than one stage of its supply chain.</p>
+            <ul>
+              <li><strong>Backward integration:</strong> Own or control inputs (suppliers, raw materials).</li>
+              <li><strong>Forward integration:</strong> Own distribution or retail (stores/delivery).</li>
+            </ul>
+            <div style="text-align:center;margin:12px 0;">
+              <svg viewBox="0 0 240 200" style="max-width:200px;width:100%;" xmlns="http://www.w3.org/2000/svg">
+                <rect x="40" y="10" width="160" height="40" rx="6" class="svg-accent-soft"/>
+                <text x="120" y="35" text-anchor="middle" font-size="11" class="svg-text">Suppliers</text>
+                <polygon points="120,55 110,65 130,65" class="svg-accent"/>
+                <rect x="40" y="70" width="160" height="40" rx="6" class="svg-accent"/>
+                <text x="120" y="95" text-anchor="middle" font-size="11" fill="#fff">Company</text>
+                <polygon points="120,115 110,125 130,125" class="svg-accent"/>
+                <rect x="40" y="130" width="160" height="40" rx="6" class="svg-accent-soft"/>
+                <text x="120" y="155" text-anchor="middle" font-size="11" class="svg-text">Distribution</text>
+              </svg>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">3.6 — Conglomerate Integration</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>Connects unrelated industries.</p>
+            <p><strong>Example:</strong> One group operates across food products, energy/power, finance/services, and infrastructure projects.</p>
+            <p><strong>Why:</strong> Diversify income and spread business risk across sectors.</p>
+            <div style="text-align:center;margin:12px 0;">
+              <svg viewBox="0 0 260 180" style="max-width:240px;width:100%;" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="130" cy="90" r="30" class="svg-accent"/>
+                <text x="130" y="95" text-anchor="middle" font-size="10" fill="#fff" font-weight="700">GROUP</text>
+                <circle cx="40" cy="40" r="18" class="svg-accent-soft"/>
+                <text x="40" y="44" text-anchor="middle" font-size="9" class="svg-text">Food</text>
+                <circle cx="220" cy="40" r="18" class="svg-accent-soft"/>
+                <text x="220" y="44" text-anchor="middle" font-size="9" class="svg-text">Energy</text>
+                <circle cx="40" cy="140" r="18" class="svg-accent-soft"/>
+                <text x="40" y="144" text-anchor="middle" font-size="9" class="svg-text">Finance</text>
+                <circle cx="220" cy="140" r="18" class="svg-accent-soft"/>
+                <text x="220" y="144" text-anchor="middle" font-size="9" class="svg-text">Infra</text>
+                <line x1="55" y1="52" x2="105" y2="75" class="svg-stroke-accent" stroke-width="2"/>
+                <line x1="205" y1="52" x2="155" y2="75" class="svg-stroke-accent" stroke-width="2"/>
+                <line x1="55" y1="128" x2="105" y2="105" class="svg-stroke-accent" stroke-width="2"/>
+                <line x1="205" y1="128" x2="155" y2="105" class="svg-stroke-accent" stroke-width="2"/>
+              </svg>
+            </div>
+            <div class="note-correction"><span class="i note-icon icon-warning"></span><div><strong>Note / Correction:</strong> The slide presents horizontal, vertical, and conglomerate integration as forms of "market integration." Strictly, these are firm-level business integration/merger strategies, not macro market integration itself.</div></div>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">3.7 — Integration Creates Opportunities and Trade-offs</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <p><strong>Potential benefits:</strong></p>
+            <ol>
+              <li>Wider access to products and markets.</li>
+              <li>Lower costs through scale and coordination.</li>
+              <li>Faster movement of goods, money, and ideas.</li>
+              <li>More investment and specialization.</li>
+            </ol>
+            <p><strong>Potential risks:</strong></p>
+            <ol>
+              <li>Reduced competition and consumer choice.</li>
+              <li>Greater market power for large firms.</li>
+              <li>Shocks can spread quickly across markets.</li>
+              <li>Benefits may be distributed unevenly.</li>
+            </ol>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">3.8 — Connected Markets, Connected Consequences</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>Integration can expand opportunity — but it can also concentrate power. Understanding the structure helps us judge the outcome.</p>
+            <p><strong>Summary:</strong> H = Horizontal (same stage); V = Vertical (supply chain); C = Conglomerate (unrelated sectors).</p>
+          </div></div>
+        </div>
+      </div>
+
+      <div class="flashcards-section">
+        <h2 class="section-heading"><span class="i icon-cards"></span> Flashcards</h2>
+        <div class="flashcards-controls"><button class="btn-secondary" data-shuffle="module-3"><span class="i icon-shuffle"></span> Shuffle</button></div>
+        <div class="flashcards-grid" id="flashcards-module-3"></div>
+      </div>
+
+      <div class="glossary-section">
+        <h2 class="section-heading"><span class="i icon-book"></span> Glossary</h2>
+        <input class="glossary-search" placeholder="Filter terms..." data-glossary="module-3">
+        <dl class="glossary-list" id="glossary-module-3"></dl>
+      </div>
+
+      <div class="quiz-section">
+        <h2 class="section-heading"><span class="i icon-quiz"></span> Module Quiz</h2>
+        <div class="quiz-best" id="quizBest-module-3"><span class="i icon-target"></span> <span>Best: —</span></div>
+        <div class="quiz-body" id="quizBody-module-3"></div>
+        <div class="quiz-actions">
+          <button class="btn-primary" data-quiz-submit="module-3">Submit Answers</button>
+          <button class="btn-secondary" data-quiz-reset="module-3" disabled><span class="i icon-reset"></span> Reset</button>
+        </div>
+        <div class="quiz-feedback" id="quizFeedback-module-3" aria-live="polite"></div>
+      </div>
+
+      <div class="complete-section">
+        <button class="btn-complete" data-complete="module-3"><span class="i icon-check"></span> <span>Mark as Complete</span></button>
+      </div>
+
+      <div class="notes-section">
+        <h2 class="section-heading"><span class="i icon-note"></span> Notes</h2>
+        <textarea class="notes-textarea" id="notes-module-3" data-notes="module-3" placeholder="Write your notes for this module..."></textarea>
+        <div class="notes-footer">
+          <span class="notes-status" id="notesStatus-module-3">Auto-saves as you type</span>
+          <button class="btn-secondary" data-export-notes="module-3"><span class="i icon-download"></span> Export .txt</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== MODULE 4 ============== -->
+    <section class="lesson" id="lesson-module-4" data-lesson-id="module-4">
+      <div class="lesson-hero">
+        <div>
+          <div class="hero-module">Module 4</div>
+          <h1 class="hero-title">Global Governance Institutions</h1>
+          <p class="hero-desc">WTO, IMF, World Bank, and transnational organizations.</p>
+        </div>
+        <div class="hero-illustration">
+          <svg viewBox="0 0 260 200" xmlns="http://www.w3.org/2000/svg">
+            <rect x="30" y="80" width="60" height="90" class="svg-accent-soft"/>
+            <rect x="100" y="60" width="60" height="110" class="svg-accent"/>
+            <rect x="170" y="90" width="60" height="80" class="svg-accent-soft"/>
+            <rect x="25" y="170" width="210" height="8" class="svg-accent"/>
+            <line x1="60" y1="80" x2="60" y2="30" class="svg-stroke-accent" stroke-width="2"/>
+            <polygon points="60,30 80,35 60,45" class="svg-accent"/>
+            <line x1="130" y1="60" x2="130" y2="20" class="svg-stroke-accent" stroke-width="2"/>
+            <polygon points="130,20 150,25 130,35" class="svg-accent"/>
+            <line x1="200" y1="90" x2="200" y2="40" class="svg-stroke-accent" stroke-width="2"/>
+            <polygon points="200,40 220,45 200,55" class="svg-accent"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="accordion-group">
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">4.1 — World Trade Organization (WTO): Functions</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li><strong>Lowering trade barriers:</strong> Works to reduce tariffs, quotas, and other barriers through negotiations among member governments.</li>
+              <li><strong>Enforcing global trade rules:</strong> Operates a system of global trade rules that provide assurance and stability for businesses and consumers.</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">4.2 — WTO: Dispute Settlement and Development Support</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li><strong>Resolving trade disputes:</strong> Provides a framework for resolving disputes through a dispute settlement process, preventing escalation into political or military conflicts.</li>
+              <li><strong>Supporting developing economies:</strong> Helps developing economies build their trade capacity.</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">4.3 — WTO: Membership</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>The WTO has a vast membership, encompassing <strong>166 member countries</strong> representing over 98% of global trade and global GDP.</p>
+            <div class="note-correction"><span class="i note-icon icon-warning"></span><div><strong>Note / Correction:</strong> The standard WTO phrasing is "over 98% of world trade." Saying "and global GDP" is not a standard precise WTO claim.</div></div>
+            <p>Joining requires negotiation with existing members — examination of the applicant's trade regime and bilateral negotiations. Approval requires a <strong>two-thirds majority</strong> of WTO members.</p>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">4.4 — WTO: Policies</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li><strong>Promoting free trade:</strong> Reduce or eliminate tariffs, quotas, and other restrictions.</li>
+              <li><strong>Encouraging investment:</strong> Rules on investment and intellectual property rights encourage FDI and technology transfer.</li>
+              <li><strong>Harmonizing trade policies:</strong> Common rules help harmonize trade policies across members.</li>
+              <li><strong>Promoting transparency:</strong> Requires member governments to be transparent about trade policies.</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">4.5 — International Monetary Fund (IMF): Objectives</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li><strong>Promoting international monetary cooperation.</strong></li>
+              <li><strong>Encouraging exchange rate stability.</strong></li>
+              <li><strong>Providing financial assistance</strong> to member countries with balance-of-payments problems.</li>
+              <li><strong>Supporting economic development</strong> via technical assistance and training.</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">4.6 — IMF: Membership</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>The IMF has <strong>191 member countries</strong>. Membership is based on a <strong>quota system</strong> that reflects each member's relative size in the global economy. Quota determines financial contribution, voting power, and access to IMF financing.</p>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">4.7 — IMF: Policies</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li><strong>Monitoring global economic conditions</strong> through regular surveillance.</li>
+              <li><strong>Providing policy advice</strong> based on surveillance findings.</li>
+              <li><strong>Promoting financial stability</strong> through lending programs.</li>
+              <li><strong>Encouraging structural reforms</strong> by attaching conditions to loans.</li>
+              <li><strong>Supporting developing countries</strong> via technical assistance and capacity development.</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">4.8 — World Bank: Objectives</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li><strong>Eradicating extreme poverty:</strong> Reduce the percentage of people living on less than $1.90 per day to no more than 3% by 2030.</li>
+              <li><strong>Boosting shared prosperity:</strong> Promote income growth among the bottom 40% of the population in every country.</li>
+            </ul>
+            <div class="note-correction"><span class="i note-icon icon-warning"></span><div><strong>Note / Correction:</strong> The current international extreme poverty line is <strong>$2.15/day</strong> (2017 PPP), updated in 2022. The 3% by 2030 target remains.</div></div>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">4.9 — World Bank: Membership</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>Owned by its member countries, which are represented by a Board of Governors. The member countries elect a president responsible for overall direction and management.</p>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">4.10 — World Bank: Five Institutions</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li><strong>IBRD</strong> (International Bank for Reconstruction and Development): Loans to middle-income and creditworthy poorer countries.</li>
+              <li><strong>IDA</strong> (International Development Association): Grants and low-interest loans to the poorest countries.</li>
+              <li><strong>IFC</strong> (International Finance Corporation): Largest global development institution focused on the private sector.</li>
+              <li><strong>MIGA</strong> (Multilateral Investment Guarantee Agency): Political risk insurance for FDI.</li>
+              <li><strong>ICSID</strong> (International Centre for Settlement of Investment Disputes): Conciliation and arbitration of investment disputes.</li>
+            </ul>
+            <p>As of 2024: IBRD has 189 members, IDA has 174. To join the World Bank, a country must first join the IMF.</p>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">4.11 — World Bank: Policies</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li><strong>Financial and technical assistance</strong> (loans, credits, grants).</li>
+              <li><strong>Policy advice and technical assistance</strong> for governance and institutions.</li>
+              <li><strong>Trade facilitation</strong> (reduce barriers, improve logistics, streamline customs).</li>
+              <li><strong>Private sector development.</strong></li>
+              <li><strong>Climate change mitigation and adaptation.</strong></li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">4.12 — Transnational Organizations: Objectives</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li><strong>Profit maximization</strong> (multinational corporations).</li>
+              <li><strong>Global impact</strong> (NGOs and intergovernmental organizations).</li>
+              <li><strong>Political influence</strong> (some MNCs lobbying governments).</li>
+              <li><strong>Knowledge sharing and collaboration</strong> (research institutions, academic networks).</li>
+            </ul>
+            <div class="note-correction"><span class="i note-icon icon-warning"></span><div><strong>Note / Correction:</strong> The slide groups MNCs, NGOs, and IGOs under "transnational organizations." They are all transnational in reach but are different actor types: MNCs are profit-seeking firms; NGOs are nonprofit civil-society bodies; IGOs are state-membership organizations.</div></div>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">4.13 — Transnational Organizations: Membership</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li><strong>MNCs:</strong> Hierarchical structure; membership by employment.</li>
+              <li><strong>NGOs:</strong> Decentralized; membership typically open to individuals who support the mission.</li>
+              <li><strong>IGOs:</strong> Composed of member states; membership defined by political will.</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">4.14 — Transnational Organizations: Policies</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li><strong>Trade and investment</strong> (MNCs produce across countries, facilitate FDI).</li>
+              <li><strong>Supply chain integration</strong> (complex global production networks).</li>
+              <li><strong>Technological diffusion</strong> (MNCs transfer technology to developing countries).</li>
+              <li><strong>International standards and regulations</strong> (WTO, etc.).</li>
+              <li><strong>Advocacy for development</strong> (NGOs and IGOs).</li>
+            </ul>
+          </div></div>
+        </div>
+      </div>
+
+      <div class="flashcards-section">
+        <h2 class="section-heading"><span class="i icon-cards"></span> Flashcards</h2>
+        <div class="flashcards-controls"><button class="btn-secondary" data-shuffle="module-4"><span class="i icon-shuffle"></span> Shuffle</button></div>
+        <div class="flashcards-grid" id="flashcards-module-4"></div>
+      </div>
+
+      <div class="glossary-section">
+        <h2 class="section-heading"><span class="i icon-book"></span> Glossary</h2>
+        <input class="glossary-search" placeholder="Filter terms..." data-glossary="module-4">
+        <dl class="glossary-list" id="glossary-module-4"></dl>
+      </div>
+
+      <div class="quiz-section">
+        <h2 class="section-heading"><span class="i icon-quiz"></span> Module Quiz</h2>
+        <div class="quiz-best" id="quizBest-module-4"><span class="i icon-target"></span> <span>Best: —</span></div>
+        <div class="quiz-body" id="quizBody-module-4"></div>
+        <div class="quiz-actions">
+          <button class="btn-primary" data-quiz-submit="module-4">Submit Answers</button>
+          <button class="btn-secondary" data-quiz-reset="module-4" disabled><span class="i icon-reset"></span> Reset</button>
+        </div>
+        <div class="quiz-feedback" id="quizFeedback-module-4" aria-live="polite"></div>
+      </div>
+
+      <div class="complete-section">
+        <button class="btn-complete" data-complete="module-4"><span class="i icon-check"></span> <span>Mark as Complete</span></button>
+      </div>
+
+      <div class="notes-section">
+        <h2 class="section-heading"><span class="i icon-note"></span> Notes</h2>
+        <textarea class="notes-textarea" id="notes-module-4" data-notes="module-4" placeholder="Write your notes for this module..."></textarea>
+        <div class="notes-footer">
+          <span class="notes-status" id="notesStatus-module-4">Auto-saves as you type</span>
+          <button class="btn-secondary" data-export-notes="module-4"><span class="i icon-download"></span> Export .txt</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== MODULE 5 ============== -->
+    <section class="lesson" id="lesson-module-5" data-lesson-id="module-5">
+      <div class="lesson-hero">
+        <div>
+          <div class="hero-module">Module 5</div>
+          <h1 class="hero-title">World-Systems Theory</h1>
+          <p class="hero-desc">Wallerstein's framework for understanding global inequality.</p>
+        </div>
+        <div class="hero-illustration">
+          <svg viewBox="0 0 260 200" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="130" cy="100" r="85" class="svg-accent-faint"/>
+            <circle cx="130" cy="100" r="55" class="svg-accent-soft"/>
+            <circle cx="130" cy="100" r="28" class="svg-accent"/>
+            <text x="130" y="105" text-anchor="middle" font-size="10" fill="#fff" font-weight="700">CORE</text>
+            <text x="130" y="60" text-anchor="middle" font-size="9" class="svg-text">SEMI-PERIPHERY</text>
+            <text x="130" y="185" text-anchor="middle" font-size="9" class="svg-text">PERIPHERY</text>
+            <path d="M130 28 L130 10" class="svg-stroke-accent" stroke-width="2"/>
+            <polygon points="130,10 125,15 135,15" class="svg-accent"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="accordion-group">
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">5.1 — Immanuel Wallerstein's World System Theory</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li>Developed in the 1970s.</li>
+              <li>Offers a framework for understanding the global political economy as a single, interconnected system.</li>
+              <li>Challenges the traditional view of separate national economies.</li>
+              <li>Argues the world is divided into three interconnected zones: core, semi-periphery, and periphery.</li>
+            </ul>
+            <div class="note-correction"><span class="i note-icon icon-warning"></span><div><strong>Note / Correction:</strong> The standard scholarly name is World-Systems Theory or world-systems analysis. The slide uses "World System Theory."</div></div>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">5.2 — The Three Zones</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li><strong>Core countries</strong> are the wealthy, industrialized nations that dominate the global economy. They control the means of production, possess advanced technology, and exploit the resources and labor of the other zones.</li>
+              <li><strong>Peripheral countries</strong> are the poorer, less developed nations that depend on the core. They often rely on exporting raw materials and cheap labor to the core, while receiving manufactured goods at higher prices.</li>
+              <li><strong>Semi-peripheral countries</strong> occupy an intermediate position, exhibiting characteristics of both core and periphery. They may be involved in exploiting peripheral countries while also being exploited by core countries.</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">5.3 — Unequal Exchange and Mobility</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li>Wallerstein argues this system is characterized by <strong>unequal exchange</strong>, where the core appropriates surplus value from the periphery through trade and investment.</li>
+              <li>This perpetuates a cycle of dependency and underdevelopment in the periphery.</li>
+              <li>However, the system is not static. Countries can move up or down the hierarchy, as exemplified by the rise of some semi-peripheral countries like China and Brazil.</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">5.4 — Key Criticisms of World-Systems Theory</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li><strong>Oversimplification:</strong> Critics argue the theory oversimplifies the complex realities of global economic interactions and ignores other factors contributing to development and underdevelopment.</li>
+              <li><strong>Lack of agency:</strong> Some argue the theory focuses too much on structural factors and underestimates the agency of individuals and nations to shape their own destinies.</li>
+              <li><strong>Difficult to test:</strong> The theory's broad scope and complex concepts make it difficult to empirically test and verify.</li>
+            </ul>
+          </div></div>
+        </div>
+      </div>
+
+      <div class="flashcards-section">
+        <h2 class="section-heading"><span class="i icon-cards"></span> Flashcards</h2>
+        <div class="flashcards-controls"><button class="btn-secondary" data-shuffle="module-5"><span class="i icon-shuffle"></span> Shuffle</button></div>
+        <div class="flashcards-grid" id="flashcards-module-5"></div>
+      </div>
+
+      <div class="glossary-section">
+        <h2 class="section-heading"><span class="i icon-book"></span> Glossary</h2>
+        <input class="glossary-search" placeholder="Filter terms..." data-glossary="module-5">
+        <dl class="glossary-list" id="glossary-module-5"></dl>
+      </div>
+
+      <div class="quiz-section">
+        <h2 class="section-heading"><span class="i icon-quiz"></span> Module Quiz</h2>
+        <div class="quiz-best" id="quizBest-module-5"><span class="i icon-target"></span> <span>Best: —</span></div>
+        <div class="quiz-body" id="quizBody-module-5"></div>
+        <div class="quiz-actions">
+          <button class="btn-primary" data-quiz-submit="module-5">Submit Answers</button>
+          <button class="btn-secondary" data-quiz-reset="module-5" disabled><span class="i icon-reset"></span> Reset</button>
+        </div>
+        <div class="quiz-feedback" id="quizFeedback-module-5" aria-live="polite"></div>
+      </div>
+
+      <div class="complete-section">
+        <button class="btn-complete" data-complete="module-5"><span class="i icon-check"></span> <span>Mark as Complete</span></button>
+      </div>
+
+      <div class="notes-section">
+        <h2 class="section-heading"><span class="i icon-note"></span> Notes</h2>
+        <textarea class="notes-textarea" id="notes-module-5" data-notes="module-5" placeholder="Write your notes for this module..."></textarea>
+        <div class="notes-footer">
+          <span class="notes-status" id="notesStatus-module-5">Auto-saves as you type</span>
+          <button class="btn-secondary" data-export-notes="module-5"><span class="i icon-download"></span> Export .txt</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== MODULE 6 ============== -->
+    <section class="lesson" id="lesson-module-6" data-lesson-id="module-6">
+      <div class="lesson-hero">
+        <div>
+          <div class="hero-module">Module 6</div>
+          <h1 class="hero-title">The Global Interstate System</h1>
+          <p class="hero-desc">Sovereignty, internationalism, and global governance.</p>
+        </div>
+        <div class="hero-illustration">
+          <svg viewBox="0 0 260 200" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="130" cy="100" r="70" class="svg-accent-soft"/>
+            <ellipse cx="130" cy="100" rx="30" ry="70" class="svg-stroke-accent" stroke-width="1.5"/>
+            <ellipse cx="130" cy="100" rx="55" ry="70" class="svg-stroke-accent" stroke-width="1.5" opacity="0.5"/>
+            <line x1="60" y1="100" x2="200" y2="100" class="svg-stroke-accent" stroke-width="1.5" opacity="0.5"/>
+            <line x1="70" y1="70" x2="190" y2="70" class="svg-stroke-accent" stroke-width="1.5" opacity="0.5"/>
+            <line x1="70" y1="130" x2="190" y2="130" class="svg-stroke-accent" stroke-width="1.5" opacity="0.5"/>
+            <circle cx="100" cy="80" r="4" class="svg-accent"/>
+            <circle cx="160" cy="90" r="4" class="svg-accent"/>
+            <circle cx="120" cy="140" r="4" class="svg-accent"/>
+            <line x1="100" y1="80" x2="160" y2="90" class="svg-stroke-accent" stroke-width="1.5" stroke-dasharray="3 2"/>
+            <line x1="160" y1="90" x2="120" y2="140" class="svg-stroke-accent" stroke-width="1.5" stroke-dasharray="3 2"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="accordion-group">
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">6.1 — Westphalian Sovereignty: Historical Roots (1648)</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <p>The modern concept of state sovereignty originated from the <strong>Treaty of Westphalia (1648)</strong>, ending the Thirty Years' War in Europe among continental powers.</p>
+            <p>It established a precedent that signatories exercise complete domestic control and commit not to interfere in other nations' internal affairs.</p>
+            <p><strong>Historical impact:</strong> Maintained European stability until challenged by Napoleon Bonaparte, who spread principles of liberty, equality, and fraternity across Europe.</p>
+            <div class="note-correction"><span class="i note-icon icon-warning"></span><div><strong>Note / Correction:</strong> "Complete domestic control" is an ideal-type; sovereignty has always been qualified in practice by human rights, security, and international law.</div></div>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">6.2 — Defining the Interstate System</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li><strong>Interstate System (Chase-Dunn):</strong> A system of unequally powerful and competing states in which no single state is capable of imposing total control over all others.</li>
+              <li>States continuously interact through shifting diplomatic alliances and conflicts, where power realignments restructure the global balance of power.</li>
+              <li><strong>Global Interstate System:</strong> An institutional arrangement of governance designed to address regional or globalized challenges that surpass the scope of individual nation-states.</li>
+              <li>Facilitates global cooperation on cross-border affairs including trade rules, climate accords, human rights, and global security.</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">6.3 — Positive Impacts of Globalization</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li><strong>Information flow:</strong> Rapid internet expansion grants global access to educational archives, digital libraries, and real-time news coverage.</li>
+              <li><strong>Resource interdependence:</strong> Nations leverage mutual natural, human, and capital resources; investments stream from core to peripheral nations.</li>
+              <li><strong>Cultural exchange:</strong> Enhanced global interaction fosters cross-community understanding; local and global cooperation boosts market innovation and services.</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">6.4 — Globalization Pressures on States</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li><strong>Cultural &amp; local strain:</strong> Secular global values can diminish traditional religious influence and challenge local languages and identity.</li>
+              <li><strong>Resource &amp; environmental damage:</strong> Rapid industrial growth and land conversion displace local agriculture and harm ecosystems.</li>
+              <li><strong>Regulatory compromises:</strong> Global corporations press host nations for lower taxes and reduced minimum wages in exchange for FDI.</li>
+              <li><strong>Ethical &amp; security vulnerabilities:</strong> Unregulated technology raises bioethical concerns; online networks can enable borderless criminal activity.</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">6.5 — Institutions of Global Governance</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li><strong>The United Nations:</strong> An international diplomatic arena for nation-states to resolve conflicts peacefully.</li>
+              <li><strong>NGOs &amp; Civil Societies:</strong> Independent bodies like Red Cross, Doctors Without Borders, and Amnesty International advocating human rights and humanitarian relief.</li>
+              <li><strong>Global treaties &amp; economic bodies:</strong> Organizations (IMF, World Bank, WTO) and accords (e.g., Montreal Protocol) that establish global rules and standards.</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">6.6 — Four Types of Internationalism</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Category</th><th>Core Principle</th><th>Primary Objective</th></tr></thead>
+                <tbody>
+                  <tr><td>Hegemonic</td><td>Dominance of one powerful country over others</td><td>Establishes global order through single-state leadership</td></tr>
+                  <tr><td>Liberal</td><td>Voluntary yields of state freedoms to international bodies</td><td>Creates a cooperative framework to prevent global lawlessness</td></tr>
+                  <tr><td>Revolutionary</td><td>Belief that societal conflicts stem from global alliances</td><td>Seeks structural overhaul of international political order</td></tr>
+                  <tr><td>Socialist</td><td>Solidarity among the working class across borders</td><td>Unites labor forces to prevent economic exploitation</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">6.7 — Internationalism vs. Globalism</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li><strong>Internationalism:</strong> Cooperation where sovereign nations actively collaborate across political, economic, and cultural spheres to promote the common good while retaining state identity. Focuses primarily on multilateral political engagements and state-to-state diplomatic relations.</li>
+              <li><strong>Globalism:</strong> The belief that goods, people, and information should move freely across borders, placing global interests above isolated national interests. Four dimensions: economic, environmental, military, and social/cultural globalism.</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="accordion">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="i accordion-chevron icon-chevron"></span>
+            <span class="accordion-title">6.8 — Image Sources</span>
+            <button class="tts-btn" aria-label="Read aloud"><span class="i icon-speaker"></span></button>
+          </button>
+          <div class="accordion-body"><div class="accordion-content">
+            <ul>
+              <li>Westphalia painting: retopea.eu</li>
+              <li>UN headquarters: traveladventures.org</li>
+              <li>Doctors Without Borders: doctorswithoutborders.org</li>
+              <li>Climate agreements: raajacademy.com</li>
+            </ul>
+          </div></div>
+        </div>
+      </div>
+
+      <div class="flashcards-section">
+        <h2 class="section-heading"><span class="i icon-cards"></span> Flashcards</h2>
+        <div class="flashcards-controls"><button class="btn-secondary" data-shuffle="module-6"><span class="i icon-shuffle"></span> Shuffle</button></div>
+        <div class="flashcards-grid" id="flashcards-module-6"></div>
+      </div>
+
+      <div class="glossary-section">
+        <h2 class="section-heading"><span class="i icon-book"></span> Glossary</h2>
+        <input class="glossary-search" placeholder="Filter terms..." data-glossary="module-6">
+        <dl class="glossary-list" id="glossary-module-6"></dl>
+      </div>
+
+      <div class="quiz-section">
+        <h2 class="section-heading"><span class="i icon-quiz"></span> Module Quiz</h2>
+        <div class="quiz-best" id="quizBest-module-6"><span class="i icon-target"></span> <span>Best: —</span></div>
+        <div class="quiz-body" id="quizBody-module-6"></div>
+        <div class="quiz-actions">
+          <button class="btn-primary" data-quiz-submit="module-6">Submit Answers</button>
+          <button class="btn-secondary" data-quiz-reset="module-6" disabled><span class="i icon-reset"></span> Reset</button>
+        </div>
+        <div class="quiz-feedback" id="quizFeedback-module-6" aria-live="polite"></div>
+      </div>
+
+      <div class="complete-section">
+        <button class="btn-complete" data-complete="module-6"><span class="i icon-check"></span> <span>Mark as Complete</span></button>
+      </div>
+
+      <div class="notes-section">
+        <h2 class="section-heading"><span class="i icon-note"></span> Notes</h2>
+        <textarea class="notes-textarea" id="notes-module-6" data-notes="module-6" placeholder="Write your notes for this module..."></textarea>
+        <div class="notes-footer">
+          <span class="notes-status" id="notesStatus-module-6">Auto-saves as you type</span>
+          <button class="btn-secondary" data-export-notes="module-6"><span class="i icon-download"></span> Export .txt</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="mobile-overlay" id="mobileOverlay"></div>
+
+<!-- Search Modal -->
+<div class="modal" id="searchModal" role="dialog" aria-modal="true" aria-label="Search">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span class="i icon-search" style="color:var(--text-muted)"></span>
+      <input class="search-input" id="searchInput" placeholder="Search lessons, headings, paragraphs..." autocomplete="off">
+      <button class="modal-close" id="searchClose" aria-label="Close search"><span class="i icon-close"></span></button>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+    <div class="search-hint"><kbd>Esc</kbd> to close · <kbd>Ctrl</kbd>+<kbd>K</kbd> to open</div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   SAFE STORAGE
+   ============================================================ */
+const Store = {
+  get(k, fallback = null) {
+    try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fallback; }
+    catch (e) { return fallback; }
+  },
+  set(k, v) {
+    try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {}
+  }
+};
+
+/* ============================================================
+   DATA: LESSON IDS / TABS / ICONS
+   ============================================================ */
+const LESSONS = [
+  { id: 'welcome', label: 'Welcome', icon: 'home' },
+  { id: 'module-1', label: 'Global North & South', icon: 'globe' },
+  { id: 'module-2', label: 'Historical Foundations', icon: 'book' },
+  { id: 'module-3', label: 'Market Integration', icon: 'target' },
+  { id: 'module-4', label: 'Global Governance', icon: 'list' },
+  { id: 'module-5', label: 'World-Systems', icon: 'globe' },
+  { id: 'module-6', label: 'Interstate System', icon: 'globe' }
+];
+
+/* ============================================================
+   DATA: FLASHCARDS
+   ============================================================ */
+const FLASHCARDS = {
+  'module-1': [
+    { f: 'Global North', b: 'Wealthy, industrialized countries. Political-economic term, not geographic.' },
+    { f: 'Global South', b: 'Developing countries with lower industrialization, shaped by colonial history.' },
+    { f: 'Brandt Line', b: 'Approximate visual division between the wealthy North and poorer South.' },
+    { f: 'HDI', b: 'UN measure with three dimensions: health, education, and income.' },
+    { f: 'Colonial Legacy', b: 'Weak institutions, extractive economies, artificial borders, internal conflicts.' }
+  ],
+  'module-2': [
+    { f: 'Out of Africa', b: 'Human migration from Africa ~100,000 years ago.' },
+    { f: 'River Valley Civilizations', b: 'Mesopotamia, Egypt, Indus Valley, China — all emerged around major rivers.' },
+    { f: 'Mesopotamia', b: 'Modern-day Iraq; Tigris and Euphrates rivers; advanced writing and architecture.' },
+    { f: 'Silk Road', b: 'Network of trade and cultural exchange routes connecting East and West.' },
+    { f: 'Age of Discovery', b: 'European expansion via conquest and trade far beyond its physical boundaries.' }
+  ],
+  'module-3': [
+    { f: 'Market Integration', b: 'Separate markets connected; changes in price, supply, demand, capital, or info travel across.' },
+    { f: 'Horizontal Integration', b: 'Companies at the same stage combine (e.g., two restaurant brands merge).' },
+    { f: 'Vertical Integration', b: 'A company controls multiple stages of its supply chain (backward = inputs, forward = distribution).' },
+    { f: 'Conglomerate Integration', b: 'Connects unrelated industries under one group to diversify and spread risk.' },
+    { f: 'Four Enablers', b: 'Technology, transport, trade policy, and finance.' }
+  ],
+  'module-4': [
+    { f: 'WTO', b: 'Reduces trade barriers, enforces rules, settles disputes; 166 members.' },
+    { f: 'IMF', b: 'Monetary cooperation, exchange rate stability, financial assistance; 191 members; quota system.' },
+    { f: 'World Bank', b: 'Poverty reduction and shared prosperity; 5 institutions (IBRD, IDA, IFC, MIGA, ICSID).' },
+    { f: 'MNC', b: 'Multinational corporation — profit-maximizing firm with global operations.' },
+    { f: 'NGO', b: 'Non-governmental organization — nonprofit, civil-society body.' }
+  ],
+  'module-5': [
+    { f: 'World-Systems Theory', b: 'Wallerstein (1970s) — global political economy as one interconnected system.' },
+    { f: 'Core', b: 'Wealthy, industrialized nations that control production and exploit others.' },
+    { f: 'Periphery', b: 'Poorer, dependent nations; export raw materials and cheap labor.' },
+    { f: 'Semi-Periphery', b: 'Intermediate zone; exploits periphery while being exploited by core.' },
+    { f: 'Unequal Exchange', b: 'Core appropriates surplus value from periphery through trade and investment.' }
+  ],
+  'module-6': [
+    { f: 'Westphalian Sovereignty', b: '1648 treaty — domestic control and non-interference between states.' },
+    { f: 'Interstate System', b: 'System of unequally powerful competing states; no single state can impose total control (Chase-Dunn).' },
+    { f: 'Internationalism', b: 'Sovereign nations cooperate across political, economic, and cultural spheres.' },
+    { f: 'Globalism', b: 'Belief that goods, people, and info should move freely across borders.' },
+    { f: 'Four Internationalisms', b: 'Hegemonic, liberal, revolutionary, socialist.' }
+  ]
+};
+
+/* ============================================================
+   DATA: GLOSSARY
+   ============================================================ */
+const GLOSSARY = {
+  'module-1': [
+    ['Global North', 'Wealthy, industrialized countries; political-economic term, not geographic.'],
+    ['Global South', 'Developing countries with lower industrialization, shaped by colonial history.'],
+    ['Brandt Line', 'Approximate visual division between Global North and South.'],
+    ['HDI', 'UN measure of well-being: health, education, income.'],
+    ['Colonialism', 'System of territorial control that left weak institutions and extractive economies.'],
+    ['Neoliberalism', 'Market liberalization, privatization, deregulation, austerity.']
+  ],
+  'module-2': [
+    ['Out of Africa', 'Migration of early humans from Africa ~100,000 years ago.'],
+    ['River Valley Civilizations', 'Mesopotamia, Egypt, Indus Valley, China.'],
+    ['Fertile Crescent', 'Region in the Middle East (Mesopotamia) with rich soil.'],
+    ['Silk Road', 'Trade and cultural exchange network across Eurasia.'],
+    ['Age of Discovery', 'European expansion via conquest and trade.']
+  ],
+  'module-3': [
+    ['Market Integration', 'Separate markets become connected; changes travel across.'],
+    ['Horizontal Integration', 'Companies at the same stage combine or coordinate.'],
+    ['Vertical Integration', 'A company controls multiple stages of its supply chain.'],
+    ['Conglomerate Integration', 'Unrelated industries under one group to diversify risk.'],
+    ['Supply Chain', 'Network of suppliers, producers, and distributors.']
+  ],
+  'module-4': [
+    ['WTO', 'World Trade Organization — trade rules and dispute settlement.'],
+    ['IMF', 'International Monetary Fund — monetary cooperation and financial assistance.'],
+    ['World Bank', 'Development institution — poverty reduction and shared prosperity.'],
+    ['MNC', 'Multinational corporation — profit-maximizing firm.'],
+    ['NGO', 'Non-governmental organization — nonprofit civil-society body.'],
+    ['IGO', 'Intergovernmental organization — composed of member states.'],
+    ['FDI', 'Foreign direct investment.']
+  ],
+  'module-5': [
+    ['World-Systems Theory', 'Wallerstein framework — core, semi-periphery, periphery.'],
+    ['Core', 'Wealthy, industrialized nations dominating the global economy.'],
+    ['Periphery', 'Poorer, dependent nations exporting raw materials.'],
+    ['Semi-Periphery', 'Intermediate zone between core and periphery.'],
+    ['Unequal Exchange', 'Core appropriates surplus value from periphery.']
+  ],
+  'module-6': [
+    ['Westphalian Sovereignty', '1648 principle of domestic control and non-interference.'],
+    ['Interstate System', 'System of unequally powerful competing states.'],
+    ['Internationalism', 'Sovereign nations cooperate across borders.'],
+    ['Globalism', 'Free movement of goods, people, and info across borders.'],
+    ['Hegemony', 'Dominance of one powerful state over others.']
+  ]
+};
+
+/* ============================================================
+   DATA: QUIZ
+   ============================================================ */
+const QUIZZES = {
+  'module-1': [
+    { q: 'What primarily defines the "Global North"?', options: ['Geography', 'Political and economic development', 'Population size', 'Climate'], a: 1 },
+    { q: 'Which country is considered part of the Global North economically despite being in the Southern Hemisphere?', options: ['Brazil', 'India', 'Australia', 'Nigeria'], a: 2 },
+    { q: 'A lower HDI indicates:', options: ['Higher life expectancy', 'Lower infant mortality', 'Lower literacy rates', 'Stronger industrial base'], a: 2 },
+    { q: 'What does the Brandt Line represent?', options: ['A trade route', 'A visual separation of wealthy North and poorer South', 'A border treaty', 'A colonial map'], a: 1 },
+    { q: 'Which institution is critiqued for potentially favoring foreign investors?', options: ['NATO', 'IMF', 'UNESCO', 'ASEAN'], a: 1 }
+  ],
+  'module-2': [
+    { q: 'According to the map, which continent did humans reach last?', options: ['Asia', 'Europe', 'South America', 'Australia'], a: 2 },
+    { q: 'Which hominid is associated with the discovery of fire?', options: ['Australopithecus', 'Homo Habilis', 'Homo Erectus', 'Homo Sapiens'], a: 2 },
+    { q: 'A key advantage of river valleys for early civilizations was:', options: ['Protection from invaders', 'Fertile soil for farming', 'Abundant minerals', 'Isolation'], a: 1 },
+    { q: 'Which civilization developed along the Nile River?', options: ['Mesopotamia', 'Indus Valley', 'Ancient Egypt', 'Ancient China'], a: 2 },
+    { q: 'The Silk Road was primarily:', options: ['A military conquest route', 'A trade and cultural exchange network', 'A religious pilgrimage route', 'A migration path'], a: 1 }
+  ],
+  'module-3': [
+    { q: 'Market integration means:', options: ['Prices become isolated', 'Changes in one market affect others', 'Trade barriers increase', 'Information slows down'], a: 1 },
+    { q: 'Which is NOT one of the four forces making integration possible?', options: ['Technology', 'Transport', 'Trade policy', 'Military alliances'], a: 3 },
+    { q: 'A company acquiring another at the same production stage is engaging in:', options: ['Vertical integration', 'Horizontal integration', 'Conglomerate integration', 'Market integration'], a: 1 },
+    { q: 'A potential risk of market integration:', options: ['More consumer choice', 'Faster movement of goods', 'Reduced competition', 'Lower costs'], a: 2 },
+    { q: 'In vertical integration, "forward integration" means:', options: ['Owning suppliers', 'Owning distribution or retail', 'Buying a competitor', 'Entering an unrelated industry'], a: 1 }
+  ],
+  'module-4': [
+    { q: 'The primary function of the WTO is to:', options: ['Provide loans to countries', 'Lower trade barriers and enforce trade rules', 'Manage global health crises', 'Settle political disputes'], a: 1 },
+    { q: 'How many member countries does the IMF have?', options: ['166', '189', '191', '174'], a: 2 },
+    { q: 'The World Bank targets extreme poverty of no more than 3% by:', options: ['2025', '2030', '2040', '2050'], a: 1 },
+    { q: 'Which institution offers political risk insurance for FDI?', options: ['IBRD', 'IDA', 'IFC', 'MIGA'], a: 3 },
+    { q: 'A multinational corporation is primarily focused on:', options: ['Human rights', 'Profit maximization', 'Environmental protection', 'Diplomatic relations'], a: 1 }
+  ],
+  'module-5': [
+    { q: 'Who developed World-Systems Theory in the 1970s?', options: ['Karl Marx', 'Immanuel Wallerstein', 'Adam Smith', 'David Ricardo'], a: 1 },
+    { q: 'The zone characterized by wealthy, industrialized nations:', options: ['Periphery', 'Semi-periphery', 'Core', 'Periphery'], a: 2 },
+    { q: 'A key criticism of World-Systems Theory:', options: ['It focuses too much on agency', 'It is too easy to test', 'It oversimplifies global interactions', 'It ignores unequal exchange'], a: 2 },
+    { q: 'Countries that exhibit characteristics of both core and periphery are called:', options: ['Core', 'Peripheral', 'Semi-peripheral', 'Developing'], a: 2 },
+    { q: 'According to Wallerstein, what perpetuates dependency?', options: ['Equal exchange', 'Unequal exchange', 'Free trade agreements', 'Technological innovation'], a: 1 }
+  ],
+  'module-6': [
+    { q: 'State sovereignty originated from the Treaty of:', options: ['Versailles', 'Westphalia', 'Paris', 'Rome'], a: 1 },
+    { q: 'The Global Interstate System facilitates:', options: ['Isolation of nation-states', 'Global cooperation on cross-border affairs', 'Increased military conflict', 'Reduced international trade'], a: 1 },
+    { q: 'Which is a positive impact of globalization?', options: ['Cultural homogenization', 'Information flow', 'Environmental damage', 'Regulatory compromises'], a: 1 },
+    { q: 'The type of internationalism focused on dominance of one powerful country:', options: ['Liberal', 'Revolutionary', 'Hegemonic', 'Socialist'], a: 2 },
+    { q: 'Internationalism primarily focuses on:', options: ['Free movement of goods', 'Multilateral political engagements and state-to-state relations', 'Profit maximization', 'Borderless criminal activity'], a: 1 }
+  ]
+};
+
+/* ============================================================
+   UTILITY: Debounce & Shuffle
+   ============================================================ */
+function debounce(fn, ms) {
+  let t;
+  return function(...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), ms); };
+}
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* ============================================================
+   INIT: THEME
+   ============================================================ */
+function initTheme() {
+  try {
+    const saved = Store.get('theme', 'light');
+    document.body.setAttribute('data-theme', saved);
+    updateThemeIcon(saved);
+    document.getElementById('themeBtn').addEventListener('click', () => {
+      const cur = document.body.getAttribute('data-theme');
+      const next = cur === 'dark' ? 'light' : 'dark';
+      document.body.setAttribute('data-theme', next);
+      Store.set('theme', next);
+      updateThemeIcon(next);
+    });
+  } catch (e) { console.warn('Theme init:', e); }
+}
+function updateThemeIcon(theme) {
+  const el = document.getElementById('themeIcon');
+  if (!el) return;
+  el.className = 'i ' + (theme === 'dark' ? 'icon-sun' : 'icon-moon');
+}
+
+/* ============================================================
+   INIT: NAV TABS + ROUTING
+   ============================================================ */
+let currentLessonId = 'welcome';
+let scrollPositions = Store.get('scrollPositions', {});
+
+function buildNavTabs() {
+  const container = document.getElementById('navTabs');
+  container.innerHTML = LESSONS.map(l => `
+    <button class="nav-tab${l.id === currentLessonId ? ' active' : ''}" data-lesson-id="${l.id}" role="tab">
+      <span class="i tab-icon icon-${l.icon}"></span>
+      <span class="tab-label">${l.label}</span>
+      <span class="i tab-check icon-check"></span>
+    </button>
+  `).join('');
+  container.querySelectorAll('.nav-tab').forEach(tab => {
+    tab.addEventListener('click', () => switchLesson(tab.dataset.lessonId, true));
+  });
+  updateTabChecks();
+}
+
+function switchLesson(id, pushHistory = false) {
+  try {
+    if (!LESSONS.find(l => l.id === id)) return;
+    // Save scroll of current
+    scrollPositions[currentLessonId] = document.getElementById('mainContent').scrollTop;
+    Store.set('scrollPositions', scrollPositions);
+
+    // Update sections
+    document.querySelectorAll('.lesson').forEach(sec => {
+      sec.classList.toggle('active', sec.dataset.lessonId === id);
+    });
+    // Update tabs
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+      tab.classList.toggle('active', tab.dataset.lessonId === id);
+    });
+    currentLessonId = id;
+    Store.set('lastLesson', id);
+
+    // Restore scroll
+    const main = document.getElementById('mainContent');
+    requestAnimationFrame(() => {
+      main.scrollTop = scrollPositions[id] || 0;
+    });
+
+    // Rebuild TOC
+    buildTOC(id);
+
+    // Close mobile sidebar
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('mobileOverlay').classList.remove('open');
+
+    // History
+    if (pushHistory) {
+      history.pushState({ lessonId: id }, '', '#' + id);
+    }
+    updateProgressBar(id);
+  } catch (e) { console.warn('switchLesson:', e); }
+}
+
+function initRouting() {
+  try {
+    // Restore last lesson or hash
+    const hash = window.location.hash.replace('#', '');
+    const last = hash || Store.get('lastLesson', 'welcome');
+    const initial = LESSONS.find(l => l.id === last) ? last : 'welcome';
+    switchLesson(initial, false);
+    history.replaceState({ lessonId: initial }, '', '#' + initial);
+
+    window.addEventListener('popstate', (e) => {
+      const id = (e.state && e.state.lessonId) || 'welcome';
+      switchLesson(id, false);
+    });
+
+    // Keyboard: Alt+Left/Right
+    document.addEventListener('keydown', (e) => {
+      if (!e.altKey) return;
+      const idx = LESSONS.findIndex(l => l.id === currentLessonId);
+      if (e.key === 'ArrowRight' && idx < LESSONS.length - 1) {
+        e.preventDefault();
+        switchLesson(LESSONS[idx + 1].id, true);
+      } else if (e.key === 'ArrowLeft' && idx > 0) {
+        e.preventDefault();
+        switchLesson(LESSONS[idx - 1].id, true);
+      }
+    });
+  } catch (e) { console.warn('Routing init:', e); }
+}
+
+/* ============================================================
+   INIT: SIDEBAR TOGGLE
+   ============================================================ */
+function initSidebarToggle() {
+  try {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobileOverlay');
+    const burger = document.getElementById('burgerBtn');
+    const closeBtn = document.getElementById('sidebarClose');
+
+    function isMobile() { return window.innerWidth <= 900; }
+
+    burger.addEventListener('click', () => {
+      if (isMobile()) {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('open', sidebar.classList.contains('open'));
+      } else {
+        sidebar.classList.toggle('hidden-desktop');
+      }
+    });
+    closeBtn.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+    });
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+    });
+  } catch (e) { console.warn('Sidebar init:', e); }
+}
+
+/* ============================================================
+   INIT: SCROLL PROGRESS BAR
+   ============================================================ */
+function initScrollProgress() {
+  try {
+    const main = document.getElementById('mainContent');
+    const bar = document.getElementById('scrollProgressBar');
+    let ticking = false;
+    main.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const h = main.scrollHeight - main.clientHeight;
+          const pct = h > 0 ? (main.scrollTop / h) * 100 : 0;
+          bar.style.width = pct + '%';
+          updateProgressBar(currentLessonId);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }, { passive: true });
+  } catch (e) { console.warn('Scroll progress:', e); }
+}
+
+/* ============================================================
+   INIT: TOC + SCROLL SPY
+   ============================================================ */
+let tocObserver = null;
+function buildTOC(lessonId) {
+  try {
+    const list = document.getElementById('tocList');
+    list.innerHTML = '';
+    if (tocObserver) { tocObserver.disconnect(); tocObserver = null; }
+    const sec = document.querySelector(`.lesson[data-lesson-id="${lessonId}"]`);
+    if (!sec) return;
+    const headers = sec.querySelectorAll('.accordion-title');
+    if (headers.length === 0) return;
+
+    headers.forEach((h, i) => {
+      const acc = h.closest('.accordion');
+      if (!acc) return;
+      const id = `toc-${lessonId}-${i}`;
+      acc.id = id;
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.className = 'toc-link';
+      a.href = '#' + id;
+      a.textContent = h.textContent.trim();
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Open the accordion
+        acc.classList.add('open');
+        acc.querySelector('.accordion-header').setAttribute('aria-expanded', 'true');
+        acc.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      li.appendChild(a);
+      list.appendChild(li);
+    });
+
+    tocObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          document.querySelectorAll('.toc-link').forEach(l => l.classList.remove('active'));
+          const link = document.querySelector(`.toc-link[href="#${entry.target.id}"]`);
+          if (link) link.classList.add('active');
+        }
+      });
+    }, { root: document.getElementById('mainContent'), rootMargin: '-10% 0px -70% 0px' });
+
+    headers.forEach((h, i) => {
+      const acc = h.closest('.accordion');
+      if (acc) tocObserver.observe(acc);
+    });
+  } catch (e) { console.warn('TOC:', e); }
+}
+
+/* ============================================================
+   INIT: ACCORDIONS (event delegation)
+   ============================================================ */
+function initAccordions() {
+  try {
+    document.addEventListener('click', (e) => {
+      // TTS button
+      if (e.target.closest('.tts-btn')) {
+        e.stopPropagation();
+        handleTTS(e.target.closest('.tts-btn'));
+        return;
+      }
+      const header = e.target.closest('.accordion-header');
+      if (!header) return;
+      const acc = header.closest('.accordion');
+      if (!acc) return;
+      acc.classList.toggle('open');
+      header.setAttribute('aria-expanded', acc.classList.contains('open') ? 'true' : 'false');
+    });
+  } catch (e) { console.warn('Accordions:', e); }
+}
+
+/* ============================================================
+   INIT: FLASHCARDS
+   ============================================================ */
+function initFlashcards() {
+  try {
+    Object.keys(FLASHCARDS).forEach(moduleId => {
+      renderFlashcards(moduleId, FLASHCARDS[moduleId]);
+    });
+    document.querySelectorAll('[data-shuffle]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.shuffle;
+        renderFlashcards(id, shuffle(FLASHCARDS[id]), true);
+      });
+    });
+    // Click to flip (delegation)
+    document.addEventListener('click', (e) => {
+      const card = e.target.closest('.flashcard');
+      if (card) card.classList.toggle('flipped');
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      const card = e.target.closest('.flashcard');
+      if (card && card.matches(':focus')) {
+        e.preventDefault();
+        card.classList.toggle('flipped');
+      }
+    });
+  } catch (e) { console.warn('Flashcards:', e); }
+}
+function renderFlashcards(moduleId, cards, animate) {
+  const grid = document.getElementById('flashcards-' + moduleId);
+  if (!grid) return;
+  grid.innerHTML = cards.map((c, i) => `
+    <div class="flashcard" tabindex="0" role="button" aria-label="Flashcard: ${c.f}. Click to flip.">
+      <div class="flashcard-inner">
+        <div class="flashcard-face flashcard-front">${c.f}</div>
+        <div class="flashcard-face flashcard-back">${c.b}</div>
+      </div>
+    </div>
+  `).join('');
+  if (animate) {
+    grid.querySelectorAll('.flashcard').forEach((el, i) => {
+      el.style.animation = `fadeIn 0.3s ${i * 30}ms both`;
+    });
+  }
+}
+
+/* ============================================================
+   INIT: GLOSSARY
+   ============================================================ */
+function initGlossary() {
+  try {
+    Object.keys(GLOSSARY).forEach(moduleId => {
+      const dl = document.getElementById('glossary-' + moduleId);
+      if (!dl) return;
+      dl.innerHTML = GLOSSARY[moduleId].map(([term, def]) => `
+        <div class="glossary-item"><dt>${term}</dt><dd>${def}</dd></div>
+      `).join('');
+    });
+    document.querySelectorAll('.glossary-search').forEach(input => {
+      const handler = debounce(() => {
+        const moduleId = input.dataset.glossary;
+        const q = input.value.toLowerCase().trim();
+        const dl = document.getElementById('glossary-' + moduleId);
+        if (!dl) return;
+        const items = dl.querySelectorAll('.glossary-item');
+        let visible = 0;
+        items.forEach(item => {
+          const match = !q || item.textContent.toLowerCase().includes(q);
+          item.style.display = match ? '' : 'none';
+          if (match) visible++;
+        });
+        // Empty state
+        let empty = dl.querySelector('.glossary-empty');
+        if (visible === 0 && !empty) {
+          const p = document.createElement('p');
+          p.className = 'glossary-empty';
+          p.textContent = 'No terms match "' + input.value + '".';
+          dl.appendChild(p);
+        } else if (visible > 0 && empty) {
+          empty.remove();
+        }
+      }, 150);
+      input.addEventListener('input', handler);
+    });
+  } catch (e) { console.warn('Glossary:', e); }
+}
+
+/* ============================================================
+   INIT: QUIZ
+   ============================================================ */
+const quizState = {};
+function initQuizzes() {
+  try {
+    Object.keys(QUIZZES).forEach(moduleId => {
+      quizState[moduleId] = { questions: null, answers: {}, submitted: false };
+      loadQuizBest(moduleId);
+      renderQuiz(moduleId);
+    });
+    document.querySelectorAll('[data-quiz-submit]').forEach(btn => {
+      btn.addEventListener('click', () => submitQuiz(btn.dataset.quizSubmit));
+    });
+    document.querySelectorAll('[data-quiz-reset]').forEach(btn => {
+      btn.addEventListener('click', () => resetQuiz(btn.dataset.quizReset));
+    });
+  } catch (e) { console.warn('Quizzes:', e); }
+}
+function loadQuizBest(moduleId) {
+  const best = Store.get('quizBest.' + moduleId, null);
+  const el = document.querySelector(`#quizBest-${moduleId} span:last-child`);
+  if (el && best !== null) el.textContent = `Best: ${best.correct}/${best.total}`;
+}
+function renderQuiz(moduleId) {
+  const state = quizState[moduleId];
+  state.questions = shuffle(QUIZZES[moduleId]).map(q => ({
+    q: q.q,
+    options: shuffle(q.options.map((text, i) => ({ text, correct: i === q.a })))
+  }));
+  state.answers = {};
+  state.submitted = false;
+  const body = document.getElementById('quizBody-' + moduleId);
+  if (!body) return;
+  body.innerHTML = state.questions.map((q, i) => `
+    <div class="quiz-question" data-q="${i}">
+      <h4><span class="quiz-q-num">${i+1}</span>${q.q}</h4>
+      ${q.options.map((o, j) => `
+        <button class="quiz-option" data-q="${i}" data-o="${j}" data-correct="${o.correct}">${o.text}</button>
+      `).join('')}
+    </div>
+  `).join('');
+  // Event delegation
+  body.onclick = (e) => {
+    const opt = e.target.closest('.quiz-option');
+    if (!opt || state.submitted) return;
+    const qi = parseInt(opt.dataset.q);
+    body.querySelectorAll(`.quiz-option[data-q="${qi}"]`).forEach(o => o.classList.remove('selected'));
+    opt.classList.add('selected');
+    state.answers[qi] = opt.dataset.correct === 'true';
+  };
+}
+function submitQuiz(moduleId) {
+  const state = quizState[moduleId];
+  if (!state || state.submitted) return;
+  const body = document.getElementById('quizBody-' + moduleId);
+  let correct = 0;
+  body.querySelectorAll('.quiz-question').forEach((qEl) => {
+    const qi = parseInt(qEl.dataset.q);
+    const selected = qEl.querySelector('.quiz-option.selected');
+    if (selected && selected.dataset.correct === 'true') correct++;
+    qEl.querySelectorAll('.quiz-option').forEach(opt => {
+      if (opt.dataset.correct === 'true') opt.classList.add('correct');
+      if (opt.classList.contains('selected') && opt.dataset.correct !== 'true') opt.classList.add('incorrect');
+    });
+  });
+  state.submitted = true;
+  const total = state.questions.length;
+  const feedback = document.getElementById('quizFeedback-' + moduleId);
+  feedback.textContent = `You scored ${correct} out of ${total}.`;
+  feedback.className = 'quiz-feedback show ' + (correct >= Math.ceil(total * 0.7) ? 'pass' : 'fail');
+
+  // Save best
+  const best = Store.get('quizBest.' + moduleId, null);
+  if (!best || correct > best.correct) {
+    Store.set('quizBest.' + moduleId, { correct, total });
+    loadQuizBest(moduleId);
+  }
+  document.querySelector(`[data-quiz-submit="${moduleId}"]`).disabled = true;
+  document.querySelector(`[data-quiz-reset="${moduleId}"]`).disabled = false;
+}
+function resetQuiz(moduleId) {
+  const state = quizState[moduleId];
+  state.submitted = false;
+  state.answers = {};
+  renderQuiz(moduleId);
+  document.getElementById('quizFeedback-' + moduleId).className = 'quiz-feedback';
+  document.getElementById('quizFeedback-' + moduleId).textContent = '';
+  document.querySelector(`[data-quiz-submit="${moduleId}"]`).disabled = false;
+  document.querySelector(`[data-quiz-reset="${moduleId}"]`).disabled = true;
+}
+
+/* ============================================================
+   INIT: NOTES + EXPORT
+   ============================================================ */
+function initNotes() {
+  try {
+    document.querySelectorAll('[data-notes]').forEach(ta => {
+      const id = ta.dataset.notes;
+      const key = 'notes.' + id;
+      ta.value = Store.get(key, '');
+      const status = document.getElementById('notesStatus-' + id);
+      const save = debounce(() => {
+        Store.set(key, ta.value);
+        if (status) {
+          status.textContent = 'Saved just now';
+          status.classList.add('saved');
+          setTimeout(() => {
+            status.textContent = 'Auto-saves as you type';
+            status.classList.remove('saved');
+          }, 1500);
+        }
+      }, 500);
+      ta.addEventListener('input', save);
+    });
+    document.querySelectorAll('[data-export-notes]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.exportNotes;
+        const ta = document.getElementById('notes-' + id);
+        if (!ta) return;
+        const blob = new Blob([ta.value || '(no notes yet)'], { type: 'text/plain;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `notes-${id}.txt`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      });
+    });
+  } catch (e) { console.warn('Notes:', e); }
+}
+
+/* ============================================================
+   INIT: TTS
+   ============================================================ */
+let activeTTS = null;
+function initTTS() {
+  try {
+    if (!('speechSynthesis' in window)) {
+      document.querySelectorAll('.tts-btn').forEach(b => b.style.display = 'none');
+      return;
+    }
+  } catch (e) { console.warn('TTS:', e); }
+}
+function handleTTS(btn) {
+  try {
+    if (!('speechSynthesis' in window)) return;
+    const acc = btn.closest('.accordion');
+    // Open accordion so content is visible
+    if (acc && !acc.classList.contains('open')) {
+      acc.classList.add('open');
+      acc.querySelector('.accordion-header').setAttribute('aria-expanded', 'true');
+    }
+    // Cancel any current speech
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+      document.querySelectorAll('.tts-btn.speaking').forEach(b => b.classList.remove('speaking'));
+      if (activeTTS === btn) { activeTTS = null; return; }
+    }
+    const content = acc.querySelector('.accordion-content');
+    if (!content) return;
+    const text = content.textContent.replace(/\s+/g, ' ').trim();
+    if (!text) return;
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 1;
+    utter.onend = () => {
+      btn.classList.remove('speaking');
+      if (activeTTS === btn) activeTTS = null;
+    };
+    btn.classList.add('speaking');
+    activeTTS = btn;
+    window.speechSynthesis.speak(utter);
+  } catch (e) { console.warn('handleTTS:', e); }
+}
+
+/* ============================================================
+   INIT: SEARCH
+   ============================================================ */
+let searchIndex = [];
+function buildSearchIndex() {
+  searchIndex = [];
+  document.querySelectorAll('.lesson').forEach(sec => {
+    const lessonId = sec.dataset.lessonId;
+    const lessonLabel = LESSONS.find(l => l.id === lessonId)?.label || lessonId;
+    sec.querySelectorAll('.accordion-title, .accordion-content p, .accordion-content li, .note-correction, .glossary-item dt, .glossary-item dd').forEach(el => {
+      const text = el.textContent.trim();
+      if (!text) return;
+      searchIndex.push({
+        lessonId, lessonLabel,
+        text,
+        target: el.closest('.accordion') || el,
+        tag: el.tagName.toLowerCase()
+      });
+    });
+  });
+}
+function initSearch() {
+  try {
+    buildSearchIndex();
+    const modal = document.getElementById('searchModal');
+    const input = document.getElementById('searchInput');
+    const results = document.getElementById('searchResults');
+    const openBtn = document.getElementById('searchBtn');
+    const closeBtn = document.getElementById('searchClose');
+
+    function open() {
+      modal.classList.add('open');
+      input.value = '';
+      results.innerHTML = '<div class="search-empty">Start typing to search all lessons…</div>';
+      setTimeout(() => input.focus(), 50);
+    }
+    function close() {
+      modal.classList.remove('open');
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    }
+    openBtn.addEventListener('click', open);
+    closeBtn.addEventListener('click', close);
+    modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); open(); }
+      if (e.key === 'Escape' && modal.classList.contains('open')) close();
+    });
+
+    const search = debounce(() => {
+      const q = input.value.toLowerCase().trim();
+      if (!q) {
+        results.innerHTML = '<div class="search-empty">Start typing to search all lessons…</div>';
+        return;
+      }
+      const seen = new Set();
+      const matches = [];
+      for (const item of searchIndex) {
+        if (!item.text.toLowerCase().includes(q)) continue;
+        const key = item.lessonId + '|' + item.text.slice(0, 40);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        matches.push(item);
+        if (matches.length >= 25) break;
+      }
+      if (matches.length === 0) {
+        results.innerHTML = '<div class="search-empty">No results for "' + input.value + '".</div>';
+        return;
+      }
+      const esc = input.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp('(' + esc + ')', 'gi');
+      results.innerHTML = matches.map((m, i) => `
+        <div class="search-result" data-idx="${i}">
+          <div class="sr-context">${m.lessonLabel}</div>
+          <div class="sr-text">${m.text.replace(regex, '<mark>$1</mark>')}</div>
+        </div>
+      `).join('');
+      results.querySelectorAll('.search-result').forEach((el, i) => {
+        el.addEventListener('click', () => {
+          const m = matches[i];
+          close();
+          switchLesson(m.lessonId, true);
+          setTimeout(() => {
+            if (m.target && m.target.classList) {
+              if (m.target.classList.contains('accordion')) {
+                m.target.classList.add('open');
+                const h = m.target.querySelector('.accordion-header');
+                if (h) h.setAttribute('aria-expanded', 'true');
+              }
+              m.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              m.target.style.transition = 'background 0.5s';
+              m.target.style.background = 'var(--accent-soft)';
+              setTimeout(() => { m.target.style.background = ''; }, 1800);
+            }
+          }, 200);
+        });
+      });
+    }, 150);
+    input.addEventListener('input', search);
+  } catch (e) { console.warn('Search:', e); }
+}
+
+/* ============================================================
+   INIT: MARK COMPLETE + PROGRESS
+   ============================================================ */
+function initComplete() {
+  try {
+    updateProgressBar();
+    document.querySelectorAll('[data-complete]').forEach(btn => {
+      const id = btn.dataset.complete;
+      const done = Store.get('complete.' + id, false);
+      if (done) {
+        btn.classList.add('done');
+        btn.querySelector('span:last-child').textContent = 'Completed';
+      }
+      btn.addEventListener('click', () => {
+        const now = !Store.get('complete.' + id, false);
+        Store.set('complete.' + id, now);
+        btn.classList.toggle('done', now);
+        btn.querySelector('span:last-child').textContent = now ? 'Completed' : 'Mark as Complete';
+        updateProgressBar();
+        updateTabChecks();
+      });
+    });
+  } catch (e) { console.warn('Complete:', e); }
+}
+function updateProgressBar(currentId) {
+  try {
+    const modules = LESSONS.filter(l => l.id.startsWith('module-'));
+    const done = modules.filter(l => Store.get('complete.' + l.id, false)).length;
+    const pct = (done / modules.length) * 100;
+    const fill = document.getElementById('progressFill');
+    const text = document.getElementById('progressText');
+    if (fill) fill.style.width = pct + '%';
+    if (text) text.textContent = `${done} of ${modules.length} modules complete`;
+  } catch (e) { console.warn('updateProgressBar:', e); }
+}
+function updateTabChecks() {
+  document.querySelectorAll('.nav-tab').forEach(tab => {
+    const id = tab.dataset.lessonId;
+    if (id.startsWith('module-')) {
+      tab.classList.toggle('complete', Store.get('complete.' + id, false));
+    }
+  });
+}
+
+/* ============================================================
+   INIT: FOCUS TIMER
+   ============================================================ */
+let timerInterval = null;
+let timerRemaining = Store.get('timerRemaining', 25 * 60);
+let timerRunning = Store.get('timerRunning', false);
+function initTimer() {
+  try {
+    const display = document.getElementById('timerDisplay');
+    const startBtn = document.getElementById('timerStart');
+    const resetBtn = document.getElementById('timerReset');
+
+    function render() {
+      const m = String(Math.floor(timerRemaining / 60)).padStart(2, '0');
+      const s = String(timerRemaining % 60).padStart(2, '0');
+      display.textContent = m + ':' + s;
+    }
+    function updateStartBtn() {
+      if (timerRunning) {
+        startBtn.innerHTML = '<span class="i icon-pause"></span> Pause';
+      } else {
+        startBtn.innerHTML = '<span class="i icon-play"></span> Start';
+      }
+    }
+    function tick() {
+      if (timerRemaining > 0) {
+        timerRemaining--;
+        Store.set('timerRemaining', timerRemaining);
+        render();
+      } else {
+        clearInterval(timerInterval);
+        timerRunning = false;
+        Store.set('timerRunning', false);
+        updateStartBtn();
+        display.style.color = 'var(--success)';
+        setTimeout(() => { display.style.color = ''; }, 3000);
+      }
+    }
+    if (timerRunning) {
+      timerInterval = setInterval(tick, 1000);
+    }
+    render();
+    updateStartBtn();
+
+    startBtn.addEventListener('click', () => {
+      if (timerRunning) {
+        clearInterval(timerInterval);
+        timerRunning = false;
+      } else {
+        timerInterval = setInterval(tick, 1000);
+        timerRunning = true;
+      }
+      Store.set('timerRunning', timerRunning);
+      updateStartBtn();
+    });
+    resetBtn.addEventListener('click', () => {
+      clearInterval(timerInterval);
+      timerRunning = false;
+      timerRemaining = 25 * 60;
+      Store.set('timerRemaining', timerRemaining);
+      Store.set('timerRunning', false);
+      render();
+      updateStartBtn();
+    });
+  } catch (e) { console.warn('Timer:', e); }
+}
+
+/* ============================================================
+   INIT: SWIPE NAVIGATION
+   ============================================================ */
+function initSwipe() {
+  try {
+    const main = document.getElementById('mainContent');
+    let sx = 0, sy = 0, st = 0;
+    main.addEventListener('touchstart', (e) => {
+      if (e.touches.length !== 1) return;
+      sx = e.touches[0].clientX;
+      sy = e.touches[0].clientY;
+      st = Date.now();
+    }, { passive: true });
+    main.addEventListener('touchend', (e) => {
+      if (!e.changedTouches.length) return;
+      const dx = e.changedTouches[0].clientX - sx;
+      const dy = e.changedTouches[0].clientY - sy;
+      const dt = Date.now() - st;
+      // Safeguards
+      if (dt > 500) return;
+      if (Math.abs(dx) < 60) return;
+      if (Math.abs(dy) > Math.abs(dx)) return;
+      // Ignore if interacting with inputs, tables, buttons, etc.
+      const target = e.target;
+      if (target.closest('input, textarea, select, .table-wrap, .quiz-option, button, a, .flashcard')) return;
+      // Edge gestures
+      if (sx < 30 || sx > window.innerWidth - 30) return;
+
+      const idx = LESSONS.findIndex(l => l.id === currentLessonId);
+      if (dx < 0 && idx < LESSONS.length - 1) {
+        switchLesson(LESSONS[idx + 1].id, true);
+      } else if (dx > 0 && idx > 0) {
+        switchLesson(LESSONS[idx - 1].id, true);
+      }
+    }, { passive: true });
+  } catch (e) { console.warn('Swipe:', e); }
+}
+
+/* ============================================================
+   INIT: PRINT
+   ============================================================ */
+function initPrint() {
+  try {
+    document.getElementById('printBtn').addEventListener('click', () => window.print());
+  } catch (e) { console.warn('Print:', e); }
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+  const inits = [
+    ['Theme', initTheme],
+    ['Nav Tabs', buildNavTabs],
+    ['Routing', initRouting],
+    ['Sidebar Toggle', initSidebarToggle],
+    ['Scroll Progress', initScrollProgress],
+    ['Accordions', initAccordions],
+    ['Flashcards', initFlashcards],
+    ['Glossary', initGlossary],
+    ['Quizzes', initQuizzes],
+    ['Notes', initNotes],
+    ['TTS', initTTS],
+    ['Search', initSearch],
+    ['Complete', initComplete],
+    ['Timer', initTimer],
+    ['Swipe', initSwipe],
+    ['Print', initPrint]
+  ];
+  inits.forEach(([name, fn]) => {
+    try { fn(); } catch (e) { console.warn(`Failed to init ${name}:`, e); }
+  });
+  // Build TOC after lessons are active
+  buildTOC(currentLessonId);
+  // Add fadeIn keyframe
+  const style = document.createElement('style');
+  style.textContent = `@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`;
+  document.head.appendChild(style);
+});
+</script>
+</body>
+</html>
